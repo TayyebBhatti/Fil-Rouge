@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2>Page de Connexion</h2>
+
+    <form method="post">
+        <div class="mb-3">
+            <label for="inputEmail" class="form-label">Email : </label>
+            <input type="email" value="" name="_username" id="inputEmail" class="form-control" required autofocus>
+        </div>
+        <div class="mb-3">
+            <label for="inputPassword" class="form-label">Password : </label>
+            <input type="password" name="_password" id="inputPassword" class="form-control" required>
+        </div>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+</div>
+{% endblock %}
