@@ -2,7 +2,10 @@
 namespace App\Entity;
 
 use App\Repository\UtilisateurRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
@@ -13,7 +16,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: "id_utilisateur", type: "integer")]
-    private ?int $id = null;
+    private ?int $idUtilisateur = null;
 
     #[ORM\Column(name: "nom", type: "string", length: 100)]
     private string $nom;
@@ -30,10 +33,21 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: "role", type: "json")]
     private array $role = ['ROLE_USER'];
 
+    /**
+     * @var Collection<int, Inscription>
+     */
+    #[ORM\OneToMany(targetEntity: Inscription::class, mappedBy: 'utilisateur')]
+    private Collection $inscriptions;
 
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        $this->inscriptions = new ArrayCollection();
+    }
+
+
+   public function getIdUtilisateur(): ?int
+    {
+    return $this->idUtilisateur;
     }
 
     public function getNom(): string
@@ -110,5 +124,35 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function __toString(): string
     {
         return $this->email ?? '';
+    }
+
+    /**
+     * @return Collection<int, Inscription>
+     */
+    public function getInscriptions(): Collection
+    {
+        return $this->inscriptions;
+    }
+
+    public function addInscription(Inscription $inscription): static
+    {
+        if (!$this->inscriptions->contains($inscription)) {
+            $this->inscriptions->add($inscription);
+            $inscription->setUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInscription(Inscription $inscription): static
+    {
+        if ($this->inscriptions->removeElement($inscription)) {
+            // set the owning side to null (unless already changed)
+            if ($inscription->getUtilisateur() === $this) {
+                $inscription->setUtilisateur(null);
+            }
+        }
+
+        return $this;
     }
 }

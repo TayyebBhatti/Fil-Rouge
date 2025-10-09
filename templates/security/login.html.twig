@@ -1,27 +1,53 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Connexion{% endblock %}
 
 {% block body %}
 <div class="container mt-5">
-    <h2>Page de Connexion</h2>
+    <h2>Connexion</h2>
 
-    <form method="post">
-        <div class="mb-3">
-            <label for="inputEmail" class="form-label">Email : </label>
-            <input type="email" value="" name="_username" id="inputEmail" class="form-control" required autofocus>
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error.messageKey|trans(error.messageData, 'security') }}
         </div>
+    {% endif %}
+
+    {% if app.user %}
         <div class="mb-3">
-            <label for="inputPassword" class="form-label">Password : </label>
-            <input type="password" name="_password" id="inputPassword" class="form-control" required>
+            Vous êtes déjà connecté en tant que {{ app.user.email }}.
+            <a href="{{ path('app_logout') }}">Se déconnecter</a>
         </div>
+    {% endif %}
+
+    <form method="post" action="{{ path('default_login') }}">
+        <div class="mb-3">
+            <label for="inputEmail" class="form-label">Email :</label>
+            <input type="email"
+                   name="_username"
+                   id="inputEmail"
+                   class="form-control"
+                   value="{{ last_username }}"
+                   required autofocus>
+        </div>
+
+        <div class="mb-3">
+            <label for="inputPassword" class="form-label">Mot de passe :</label>
+            <input type="password"
+                   name="_password"
+                   id="inputPassword"
+                   class="form-control"
+                   required>
+        </div>
+
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-        <button type="submit" class="btn btn-primary">Login</button>
-         <div class="text-center mt-3">
-                        <p>Pas de compte ? 
-                           <a href="{{ path('default_inscription') }}">S'inscrire</a>
-                        </p>
-                    </div>
+
+        <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+
+        <div class="text-center mt-3">
+            <p>Pas de compte ?
+                <a href="{{ path('default_inscription') }}">S'inscrire</a>
+            </p>
+        </div>
     </form>
 </div>
 {% endblock %}

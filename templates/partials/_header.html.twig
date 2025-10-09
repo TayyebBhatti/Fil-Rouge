@@ -2,12 +2,42 @@
     <div class="logo">EventFlow</div>
     <ul class="nav-links">
         <li><a href="{{ path('default_home') }}">Accueil</a></li>
-        <li><a href="{{ path('default_login') }}">Connexion</a></li>
+
+        {% if app.user %}
+            <li>
+                <a href="{{ path('app_logout') }}">Déconnexion</a>
+            </li>
+            <li>
+                <span>Connecté : {{ app.user.nom }} {{ app.user.prenom }}</span>
+            </li>
+        {% else %}
+            <li>
+                <a href="{{ path('default_login') }}">Connexion</a>
+            </li>
+        {% endif %}
     </ul>
 </nav>
+
 <style>
-    .navbar {display:flex;justify-content:space-between;align-items:center;padding:10px 20px;background:#222;color:#fff;}
-    .nav-links {list-style:none;display:flex;gap:20px;margin:0;}
-    .nav-links a {color:#fff;text-decoration:none;}
-    .nav-links a:hover {text-decoration:underline;}
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: #222;
+    color: #fff;
+}
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    margin: 0;
+}
+.nav-links a {
+    color: #fff;
+    text-decoration: none;
+}
+.nav-links a:hover {
+    text-decoration: underline;
+}
 </style>
