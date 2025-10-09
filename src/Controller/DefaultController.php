@@ -5,6 +5,8 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Repository\EvenementRepository;
+
 
 class DefaultController extends AbstractController
 {
@@ -14,10 +16,17 @@ class DefaultController extends AbstractController
      * @return Response
      */
     #[Route('/', name: 'default_home', methods: ['GET'])]
-    public function home()
+    public function index(EvenementRepository $repo): Response
     {
-        return $this->render('default/home.html.twig');
-        # return new Response('<h1>Hello World!</h1>');
+        // jointures légères pour éviter le N+1 sur categorie et lieu
+        $evenements = $repo->createQueryBuilder('e')
+            ->leftJoin('e.categorie', 'c')->addSelect('c')
+            ->leftJoin('e.lieu', 'l')->addSelect('l')
+           // ->orderBy('e.dateDebut', 'ASC')     // adapte si ton champ diffère
+            ->getQuery()->getResult();
+        return $this->render('default/home.html.twig', [
+            'evenements' => $evenements,
+        ]);
     }
 
 

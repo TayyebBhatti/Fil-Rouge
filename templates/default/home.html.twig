@@ -1,13 +1,62 @@
-{% extends "base.html.twig"%}
-{% block title %}
-    Accueil
-{% endblock %}
+{% extends "base.html.twig" %}
+{% block title %}Accueil{% endblock %}
 
 {% block body %}
-    <h1>
-        Accueil
-    </h1>
-    <p>
-        lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean
-    </p>
+  <h1>Événements</h1>
+
+  {% if evenements is empty %}
+    <p>Aucun événement pour le moment.</p>
+  {% else %}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;">
+      {% for e in evenements %}
+        <article style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;">
+          {# Titre #}
+          <h2 style="margin:4px 0 6px;font-size:1.1rem;">
+            {{ e.titre ?? ('Événement #' ~ e.id) }}
+          </h2>
+
+          {# Dates #}
+          <p style="margin:0;color:#555;">
+            {{ e.dateDebut ? e.dateDebut|date('d/m/Y H:i') : 'Date à venir' }}
+            {% if e.dateFin %} → {{ e.dateFin|date('d/m/Y H:i') }}{% endif %}
+          </p>
+
+          {# Lieu #}
+          {% set l = e.lieu ?? null %}
+          {% if l %}
+            <p style="margin:4px 0;color:#444;">
+              📍 {{ l.nom ?? '' }}{% if l.ville %}, {{ l.ville }}{% endif %}{% if l.pays %} • {{ l.pays }}{% endif %}
+            </p>
+          {% endif %}
+
+          {# Catégorie #}
+          {% if e.categorie %}
+            <p style="margin:4px 0;color:#444;">🏷️ {{ e.categorie.nom ?? e.categorie }}</p>
+          {% endif %}
+
+          {# Description #}
+          {% if e.description %}
+            <p style="margin-top:6px;">
+              {{ e.description|u.truncate(180, '…', false) }}
+            </p>
+          {% endif %}
+
+          {# Capacités et inscriptions #}
+          {% set nbInsc = e.inscriptions is defined ? e.inscriptions|length : 0 %}
+          {% if e.capaciteMax is defined %}
+            <p style="margin:6px 0;color:#333;">
+              {{ nbInsc }}/{{ e.capaciteMax }} inscrits
+              {% set rest = e.capaciteMax - nbInsc %}
+              {% if rest <= 0 %}<strong> • Complet</strong>{% endif %}
+            </p>
+          {% elseif e.inscriptions is defined %}
+            <p style="margin:6px 0;color:#333;">{{ nbInsc }} inscrit(s)</p>
+          {% endif %}
+
+          {# Bouton détail si une route existe (# à remplacer) #}
+          {# <a href="{{ path('evenement_show', {id: e.id}) }}" class="btn">Détails</a> #}
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
 {% endblock %}

@@ -55,7 +55,7 @@ class AppFixtures extends Fixture
             $u->setRoles($i === 1 ? ['ROLE_ADMIN'] : ['ROLE_USER']);
             // champ mot_de_passe => encode
             $hash = $this->hasher->hashPassword($u, 'Password123!');
-            $u->setMotDePasse($hash);
+            $u->setPassword($hash);
             $manager->persist($u);
             $users[] = $u;
         }
@@ -84,6 +84,9 @@ class AppFixtures extends Fixture
             if (method_exists($e, 'setLieu')) {
                 $e->setLieu($lieux[array_rand($lieux)]);
             }
+            if (method_exists($e, 'setCreateur')) {
+                $e->setCreateur($users[array_rand($users)]);
+            }
             $manager->persist($e);
             $events[] = $e;
         }
@@ -104,6 +107,7 @@ class AppFixtures extends Fixture
             $insc = new Inscription();
             $insc->setUtilisateur($user);
             $insc->setEvenement($event);
+            $insc->setDateInscription(new \DateTime());
             $manager->persist($insc);
 
             $count++;

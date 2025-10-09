@@ -1,104 +1,67 @@
 <?php
+
 namespace App\Entity;
 
-use App\Repository\UtilisateurRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
-#[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
-#[ORM\Table(name: "Utilisateur")]
+#[ORM\Entity]
 class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: "id_utilisateur", type: "integer")]
-    private ?int $idUtilisateur = null;
+    #[ORM\Column(name: 'id_utilisateur', type: 'integer')]
+    private ?int $id = null;
 
-    #[ORM\Column(name: "nom", type: "string", length: 100)]
-    private string $nom;
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    private ?string $nom = null;
 
-    #[ORM\Column(name: "prenom", type: "string", length: 100)]
-    private string $prenom;
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    private ?string $prenom = null;
 
-    #[ORM\Column(name: "email", type: "string", length: 255, unique: true)]
-    private string $email;
+    #[ORM\Column(type: 'string', length: 180, unique: true, nullable: true)]
+    private ?string $email = null;
 
-    #[ORM\Column(name: "mot_de_passe", type: "string", length: 255)]
-    private string $motDePasse;
+    #[ORM\Column(type: 'json')]
+    private array $roles = [];
 
-    #[ORM\Column(name: "role", type: "json")]
-    private array $role = ['ROLE_USER'];
+    #[ORM\Column(name: 'mot_de_passe', type: 'string', length: 255, nullable: true)]
+    private ?string $password = null;
 
-    /**
-     * @var Collection<int, Inscription>
-     */
-    #[ORM\OneToMany(targetEntity: Inscription::class, mappedBy: 'utilisateur')]
+    /** @var Collection<int, Inscription> */
+    #[ORM\OneToMany(targetEntity: Inscription::class, mappedBy: 'utilisateur', orphanRemoval: false)]
     private Collection $inscriptions;
+
+    /** @var Collection<int, Evenement> */
+    #[ORM\OneToMany(targetEntity: Evenement::class, mappedBy: 'createur', orphanRemoval: false)]
+    private Collection $evenementsCrees;
 
     public function __construct()
     {
         $this->inscriptions = new ArrayCollection();
+        $this->evenementsCrees = new ArrayCollection();
     }
 
+    public function getId(): ?int { return $this->id; }
 
-   public function getIdUtilisateur(): ?int
-    {
-    return $this->idUtilisateur;
-    }
+    public function getNom(): ?string { return $this->nom; }
+    public function setNom(?string $nom): self { $this->nom = $nom; return $this; }
 
-    public function getNom(): string
-    {
-        return $this->nom;
-    }
+    public function getPrenom(): ?string { return $this->prenom; }
+    public function setPrenom(?string $prenom): self { $this->prenom = $prenom; return $this; }
 
-    public function setNom(string $nom): self
-    {
-        $this->nom = $nom;
-        return $this;
-    }
-
-    public function getPrenom(): string
-    {
-        return $this->prenom;
-    }
-
-    public function setPrenom(string $prenom): self
-    {
-        $this->prenom = $prenom;
-        return $this;
-    }
-
-    public function getEmail(): string
-    {
-        return $this->email;
-    }
-
-    public function setEmail(string $email): self
-    {
-        $this->email = $email;
-        return $this;
-    }
-
-    public function getPassword(): string
-    {
-        return $this->motDePasse;
-    }
-
-    public function setMotDePasse(string $hashedPassword): self
-    {
-        $this->motDePasse = $hashedPassword;
-        return $this;
-    }
+    public function getEmail(): ?string { return $this->email; }
+    public function setEmail(?string $email): self { $this->email = $email; return $this; }
 
     public function getUserIdentifier(): string
     {
-        return $this->email;
+        return (string) ($this->email ?? '');
     }
 
+    /** @deprecated Symfony < 5.3 */
     public function getUsername(): string
     {
         return $this->getUserIdentifier();
@@ -106,14 +69,25 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        $roles = $this->role ?? [];
+        $roles = $this->roles;
         $roles[] = 'ROLE_USER';
         return array_unique($roles);
     }
 
     public function setRoles(array $roles): self
     {
-        $this->role = $roles;
+        $this->roles = $roles;
+        return $this;
+    }
+
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(?string $password): self
+    {
+        $this->password = $password;
         return $this;
     }
 
@@ -121,38 +95,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
     }
 
-    public function __toString(): string
-    {
-        return $this->email ?? '';
-    }
+    /** @return Collection<int, Inscription> */
+    public function getInscriptions(): Collection { return $this->inscriptions; }
 
-    /**
-     * @return Collection<int, Inscription>
-     */
-    public function getInscriptions(): Collection
-    {
-        return $this->inscriptions;
-    }
-
-    public function addInscription(Inscription $inscription): static
-    {
-        if (!$this->inscriptions->contains($inscription)) {
-            $this->inscriptions->add($inscription);
-            $inscription->setUtilisateur($this);
-        }
-
-        return $this;
-    }
-
-    public function removeInscription(Inscription $inscription): static
-    {
-        if ($this->inscriptions->removeElement($inscription)) {
-            // set the owning side to null (unless already changed)
-            if ($inscription->getUtilisateur() === $this) {
-                $inscription->setUtilisateur(null);
-            }
-        }
-
-        return $this;
-    }
+    /** @return Collection<int, Evenement> */
+    public function getEvenementsCrees(): Collection { return $this->evenementsCrees; }
 }

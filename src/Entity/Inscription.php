@@ -2,52 +2,35 @@
 
 namespace App\Entity;
 
-use App\Repository\InscriptionRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: InscriptionRepository::class)]
+#[ORM\Entity]
 class Inscription
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'inscriptions')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTimeInterface $dateInscription = null;
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'inscriptions')]
+    #[ORM\JoinColumn(name: 'id_utilisateur', referencedColumnName: 'id_utilisateur', nullable: false)]
     private ?Utilisateur $utilisateur = null;
 
-
-    #[ORM\ManyToOne(inversedBy: 'inscriptions')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Evenement::class, inversedBy: 'inscriptions')]
+    #[ORM\JoinColumn(name: 'evenement_id', referencedColumnName: 'id', nullable: false)]
     private ?Evenement $evenement = null;
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function getUtilisateur(): ?Utilisateur
-    {
-        return $this->utilisateur;
-    }
+    public function getDateInscription(): ?\DateTimeInterface { return $this->dateInscription; }
+    public function setDateInscription(?\DateTimeInterface $date): self { $this->dateInscription = $date; return $this; }
 
-    public function setUtilisateur(?Utilisateur $utilisateur): static
-    {
-        $this->utilisateur = $utilisateur;
+    public function getUtilisateur(): ?Utilisateur { return $this->utilisateur; }
+    public function setUtilisateur(?Utilisateur $utilisateur): self { $this->utilisateur = $utilisateur; return $this; }
 
-        return $this;
-    }
-
-    public function getEvenement(): ?Evenement
-    {
-        return $this->evenement;
-    }
-
-    public function setEvenement(?Evenement $evenement): static
-    {
-        $this->evenement = $evenement;
-
-        return $this;
-    }
+    public function getEvenement(): ?Evenement { return $this->evenement; }
+    public function setEvenement(?Evenement $evenement): self { $this->evenement = $evenement; return $this; }
 }
