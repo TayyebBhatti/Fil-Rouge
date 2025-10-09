@@ -24,14 +24,14 @@ class DefaultController extends AbstractController
      #[Route('/login', name: 'default_login', methods: ['GET'])]
     public function login()
     {
-        return $this->render('default/login.html.twig');
+        return $this->render('security/login.html.twig');
         # return new Response('<h1>Hello World!</h1>');
     }
 
-     #[Route('/inscription', name: 'default_inscription', methods: ['GET'])]
-    public function inscription()
+     #[Route('/details', name: 'default_details', methods: ['GET'])]
+    public function details()
     {
-        return $this->render('default/inscription.html.twig');
+        return $this->render('default/details.html.twig');
         # return new Response('<h1>Hello World!</h1>');
     }
 
