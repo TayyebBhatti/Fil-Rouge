@@ -1,37 +1,55 @@
 {% extends "base.html.twig" %}
 {% block title %}Détails de l’événement{% endblock %}
 
-{% block body %}
-  {% for msg in app.flashes('success') %}
-    <div style="padding:8px;border:1px solid #16a34a;color:#14532d;border-radius:8px;margin-bottom:10px;">{{ msg }}</div>
-  {% endfor %}
-  {% for msg in app.flashes('error') %}
-    <div style="padding:8px;border:1px solid #dc2626;color:#7f1d1d;border-radius:8px;margin-bottom:10px;">{{ msg }}</div>
-  {% endfor %}
+{% block stylesheets %}
+<style>
+  :root{--bg:#f6f8fb;--card:#fff;--text:#111827;--muted:#6b7280;--primary:#0ea5e9;--primary-hover:#0369a1;--success:#16a34a;--danger:#dc2626;--border:#e5e7eb;--shadow:0 8px 24px rgba(0,0,0,.08)}
+  *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial,"Noto Sans",sans-serif;background:var(--bg);color:var(--text)}
+  .wrap{max-width:900px;margin:24px auto;padding:0 16px}
+  .alert{padding:10px 12px;border:1px solid;border-radius:10px;margin-bottom:10px;font-size:14px}
+  .alert-success{border-color:var(--success);background:#ecfdf5;color:#14532d}
+  .alert-error{border-color:var(--danger);background:#fef2f2;color:#7f1d1d}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+  .hero{width:100%;height:340px;object-fit:cover;background:#e5e7eb}
+  .body{padding:20px}
+  .head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+  h1{margin:0;font-size:24px} .meta,.muted{color:var(--muted)}
+  .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid transparent;text-decoration:none;cursor:pointer;font-weight:600}
+  .btn-ghost{background:#fff;border-color:var(--border);color:#0b1220}
+  .btn-ghost:hover{border-color:#cbd5e1}
+  .btn-primary{background:var(--success);border-color:var(--success);color:#fff}
+  .btn-primary:hover{background:#15803d}
+  .btn-danger{background:var(--danger);border-color:var(--danger);color:#fff}
+  .btn-danger:hover{background:#b91c1c}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+</style>
+{% endblock %}
 
-  <div style="max-width:800px;margin:20px auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.1);background:white;">
+{% block body %}
+<div class="wrap">
+  {% for msg in app.flashes('success') %}<div class="alert alert-success">{{ msg }}</div>{% endfor %}
+  {% for msg in app.flashes('error') %}<div class="alert alert-error">{{ msg }}</div>{% endfor %}
+
+  <article class="card">
     {% if evenement.image %}
-      <img src="{{ asset(evenement.image) }}" alt="Image de {{ evenement.titre }}" style="width:100%;height:350px;object-fit:cover;">
+      <img class="hero" src="{{ asset(evenement.image) }}" alt="Image de {{ evenement.titre }}">
     {% else %}
-      <img src="{{ asset('img/default.jpg') }}" alt="Image par défaut" style="width:100%;height:350px;object-fit:cover;">
+      <img class="hero" src="{{ asset('img/default.jpg') }}" alt="Image par défaut">
     {% endif %}
 
-    <div style="padding:20px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-        <h1 style="margin:0;">{{ evenement.titre ?? ('Événement #' ~ evenement.id) }}</h1>
-        <a href="{{ path('default_home') }}"
-           style="padding:8px 12px;border:1px solid #9ca3af;border-radius:8px;background:#f3f4f6;color:#111827;text-decoration:none;font-size:0.9rem;cursor:pointer;">
-          ← Retour
-        </a>
+    <div class="body">
+      <div class="head">
+        <h1>{{ evenement.titre ?? ('Événement #' ~ evenement.id) }}</h1>
+        <a href="{{ path('default_home') }}" class="btn btn-ghost">← Retour</a>
       </div>
 
-      <p style="margin:0 0 10px 0;color:#555;">
+      <p class="meta">
         Du {{ evenement.dateDebut ? evenement.dateDebut|date('d/m/Y H:i') : 'Date à venir' }}
         {% if evenement.dateFin %} au {{ evenement.dateFin|date('d/m/Y H:i') }}{% endif %}
       </p>
 
       {% if createur %}
-        <p style="margin:0 0 10px 0;">👤 Créé par :
+        <p class="muted">👤 Créé par :
           <strong>
             {% if createur.prenom is defined %}{{ createur.prenom }} {% endif %}
             {% if createur.nom is defined %}{{ createur.nom }}{% endif %}
@@ -40,52 +58,39 @@
       {% endif %}
 
       {% if evenement.lieu %}
-        <p style="margin:0 0 10px 0;">
+        <p>
           📍
-          {% if evenement.lieu.rue is defined and evenement.lieu.rue %}{{ evenement.lieu.rue }}, {% endif %}
-          {% if evenement.lieu.code_postal is defined and evenement.lieu.code_postal %}{{ evenement.lieu.code_postal }} {% endif %}
-          {% if evenement.lieu.ville is defined and evenement.lieu.ville %}{{ evenement.lieu.ville }}{% endif %}
-          {% if evenement.lieu.pays is defined and evenement.lieu.pays %} • {{ evenement.lieu.pays }}{% endif %}
+          {% if evenement.lieu.rue %}{{ evenement.lieu.rue }}, {% endif %}
+          {% if evenement.lieu.codepostal %}{{ evenement.lieu.codepostal }} {% endif %}
+          {% if evenement.lieu.ville %}{{ evenement.lieu.ville }}{% endif %}
+          {% if evenement.lieu.pays %} • {{ evenement.lieu.pays }}{% endif %}
         </p>
       {% endif %}
 
-      {% if evenement.categorie %}
-        <p style="margin:0 0 10px 0;">🏷️ Catégorie : {{ evenement.categorie.nom ?? evenement.categorie }}</p>
-      {% endif %}
-
-      {% if evenement.description %}
-        <p style="margin:15px 0;white-space:pre-line;">{{ evenement.description }}</p>
-      {% endif %}
+      {% if evenement.categorie %}<p>🏷️ Catégorie : {{ evenement.categorie.nom ?? evenement.categorie }}</p>{% endif %}
+      {% if evenement.description %}<p style="white-space:pre-line">{{ evenement.description }}</p>{% endif %}
 
       {% set nbInsc = evenement.inscriptions is defined ? evenement.inscriptions|length : 0 %}
-      {% if evenement.capaciteMax is defined %}
-        <p style="margin:10px 0;">👥 {{ nbInsc }}/{{ evenement.capaciteMax }} inscrits</p>
-      {% endif %}
+      {% if evenement.capaciteMax is defined %}<p>👥 {{ nbInsc }}/{{ evenement.capaciteMax }} inscrits</p>{% endif %}
 
-      <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap;">
+      <div class="actions">
         {% if app.user %}
           {% if dejaInscrit %}
             <form method="post" action="{{ path('evenement_unregister', {id: evenement.id}) }}">
               <input type="hidden" name="_token" value="{{ csrf_token('desinscrire_' ~ evenement.id) }}">
-              <button type="submit" style="padding:10px 16px;border:1px solid #dc2626;border-radius:8px;background:#dc2626;color:white;cursor:pointer;">
-                Se désinscrire
-              </button>
+              <button type="submit" class="btn btn-danger">Se désinscrire</button>
             </form>
           {% else %}
             <form method="post" action="{{ path('evenement_register', {id: evenement.id}) }}">
               <input type="hidden" name="_token" value="{{ csrf_token('inscrire_' ~ evenement.id) }}">
-              <button type="submit" style="padding:10px 16px;border:1px solid #16a34a;border-radius:8px;background:#16a34a;color:white;cursor:pointer;">
-                S’inscrire
-              </button>
+              <button type="submit" class="btn btn-primary">S’inscrire</button>
             </form>
           {% endif %}
         {% else %}
-          <a href="{{ path('default_login') }}"
-             style="display:inline-block;padding:10px 16px;border:1px solid #0ea5e9;border-radius:8px;color:#075985;text-decoration:none;">
-            Se connecter pour s’inscrire
-          </a>
+          <a href="{{ path('default_login') }}" class="btn btn-ghost">Se connecter pour s’inscrire</a>
         {% endif %}
       </div>
     </div>
-  </div>
+  </article>
+</div>
 {% endblock %}

@@ -1,130 +1,102 @@
 {% extends 'base.html.twig' %}
 {% block title %}Mon Profil{% endblock %}
 
+{% block stylesheets %}
+<style>
+  :root{--bg:#f6f8fb;--card:#fff;--text:#111827;--muted:#6b7280;--primary:#0ea5e9;--success:#16a34a;--danger:#dc2626;--border:#e5e7eb;--shadow:0 8px 24px rgba(0,0,0,.08)}
+  *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial,"Noto Sans",sans-serif;background:var(--bg);color:var(--text)}
+  .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+  .alert{padding:10px 12px;border:1px solid;border-radius:10px;margin-bottom:10px;font-size:14px}
+  .alert-success{border-color:var(--success);background:#ecfdf5;color:#14532d}
+  .alert-error{border-color:var(--danger);background:#fef2f2;color:#7f1d1d}
+  h1{margin:0 0 20px}
+  .right{display:flex;justify-content:flex-end;margin-bottom:16px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;border:1px solid transparent;font-weight:600;text-decoration:none;cursor:pointer}
+  .btn-info{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn-info:hover{background:#0369a1}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:var(--shadow)}
+  .section-title{margin:0 0 14px;color:#111827;border-bottom:2px solid var(--primary);padding-bottom:8px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+  .avatar{width:120px;height:120px;border-radius:999px;overflow:hidden;border:3px solid var(--primary);background:#e5e7eb;display:flex;align-items:center;justify-content:center}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .mini{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#f9fafb}
+  .mini img{width:100%;height:140px;object-fit:cover}
+  .mini .body{padding:12px}
+  .badge{padding:4px 10px;border-radius:6px;font-size:.9rem;color:#fff}
+  .bg-user{background:var(--primary)} .bg-admin{background:var(--success)}
+  .actions{display:flex;gap:8px}
+  .btn-ghost{background:#fff;border:1px solid var(--border);color:#0b1220}
+  .btn-ghost:hover{border-color:#cbd5e1}
+  .btn-danger{background:var(--danger);border-color:var(--danger);color:#fff}
+  .btn-danger:hover{background:#b91c1c}
+</style>
+{% endblock %}
+
 {% block body %}
-<div style="max-width:1200px;margin:0 auto;padding:20px;">
-  
-  {% for msg in app.flashes('success') %}
-    <div style="padding:8px;border:1px solid #16a34a;color:#14532d;border-radius:8px;margin-bottom:10px;">{{ msg }}</div>
-  {% endfor %}
-  {% for msg in app.flashes('error') %}
-    <div style="padding:8px;border:1px solid #dc2626;color:#7f1d1d;border-radius:8px;margin-bottom:10px;">{{ msg }}</div>
-  {% endfor %}
+<div class="wrap">
+  {% for msg in app.flashes('success') %}<div class="alert alert-success">{{ msg }}</div>{% endfor %}
+  {% for msg in app.flashes('error') %}<div class="alert alert-error">{{ msg }}</div>{% endfor %}
 
-  <h1 style="margin-bottom:30px;">👤 Mon Profil</h1>
+  <h1>👤 Mon Profil</h1>
 
-   {% if 'ROLE_ADMIN' in user.roles %}
-    <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
-      <a href="{{ path('admin_utilisateur_index') }}"
-         style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;border:1px solid #0ea5e9;background:#0ea5e9;color:white;text-decoration:none;font-weight:600;box-shadow:0 4px 10px rgba(14,165,233,0.25);">
-        <span>🛠️</span>
-        <span>Gérer les utilisateurs</span>
-      </a>
+  {% if 'ROLE_ADMIN' in user.roles %}
+    <div class="right">
+      <a href="{{ path('admin_utilisateur_index') }}" class="btn btn-info">🛠️ Gérer les utilisateurs</a>
     </div>
   {% endif %}
 
-  <div style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:30px;box-shadow:0 2px 6px rgba(0,0,0,0.1);">
-    <h2 style="margin-top:0;margin-bottom:20px;color:#111827;border-bottom:2px solid #0ea5e9;padding-bottom:10px;">
-      📋 Informations personnelles
-    </h2>
-      
+  <section class="card">
+    <h2 class="section-title">📋 Informations personnelles</h2>
+
     {% set hasAbsoluteImage = user.image and (user.image starts with 'http://' or user.image starts with 'https://') %}
     {% set profileImage = hasAbsoluteImage ? user.image : (user.image ? asset(user.image) : asset('img/default-avatar.svg')) %}
 
-    <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;margin-bottom:24px;">
-      <div style="width:120px;height:120px;border-radius:9999px;overflow:hidden;border:3px solid #0ea5e9;background:#e5e7eb;display:flex;align-items:center;justify-content:center;">
-        <img src="{{ profileImage }}"
-             alt="Photo de profil de {{ user.prenom ?: user.nom ?: user.email }}"
-             style="width:100%;height:100%;object-fit:cover;">
-      </div>
-
-      <div style="flex:1;min-width:220px;">
-        <p style="margin:0;color:#6b7280;font-size:0.9rem;">Adresse email</p>
-        <p style="margin:5px 0 0 0;font-size:1.1rem;font-weight:500;word-break:break-word;">{{ user.email }}</p>
+    <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;margin-bottom:18px">
+      <div class="avatar"><img src="{{ profileImage }}" alt="Photo de profil" style="width:100%;height:100%;object-fit:cover"></div>
+      <div style="flex:1;min-width:220px">
+        <p class="muted" style="margin:0">Adresse email</p>
+        <p style="margin:6px 0 0;font-weight:500">{{ user.email }}</p>
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:20px;">
+    <div class="grid">
+      <div><p class="muted" style="margin:0">Nom</p><p style="margin:6px 0 0;font-weight:500">{{ user.nom ?: '—' }}</p></div>
+      <div><p class="muted" style="margin:0">Prénom</p><p style="margin:6px 0 0;font-weight:500">{{ user.prenom ?: '—' }}</p></div>
       <div>
-        <p style="margin:0;color:#6b7280;font-size:0.9rem;">Nom</p>
-        <p style="margin:5px 0 0 0;font-size:1.1rem;font-weight:500;">{{ user.nom ?: '—' }}</p>
-      </div>
-      
-      <div>
-        <p style="margin:0;color:#6b7280;font-size:0.9rem;">Prénom</p>
-        <p style="margin:5px 0 0 0;font-size:1.1rem;font-weight:500;">{{ user.prenom ?: '—' }}</p>
-      </div>
-      
-     
-      
-      <div>
-        <p style="margin:0;color:#6b7280;font-size:0.9rem;">Rôle</p>
-        <p style="margin:5px 0 0 0;font-size:1.1rem;font-weight:500;">
+        <p class="muted" style="margin:0">Rôle</p>
+        <p style="margin:6px 0 0">
           {% if 'ROLE_ADMIN' in user.roles %}
-            <span style="padding:4px 10px;background:#16a34a;color:white;border-radius:6px;font-size:0.9rem;">Administrateur</span>
+            <span class="badge bg-admin">Administrateur</span>
           {% else %}
-            <span style="padding:4px 10px;background:#0ea5e9;color:white;border-radius:6px;font-size:0.9rem;">Utilisateur</span>
+            <span class="badge bg-user">Utilisateur</span>
           {% endif %}
         </p>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:30px;box-shadow:0 2px 6px rgba(0,0,0,0.1);">
-    <h2 style="margin-top:0;margin-bottom:20px;color:#111827;border-bottom:2px solid #0ea5e9;padding-bottom:10px;">
-      🎟️ Mes inscriptions ({{ mesInscriptions|length }})
-    </h2>
-    
+  <section class="card">
+    <h2 class="section-title">🎟️ Mes inscriptions ({{ mesInscriptions|length }})</h2>
+
     {% if mesInscriptions is empty %}
-      <p style="color:#6b7280;text-align:center;padding:20px;">
-        Vous n'êtes inscrit à aucun événement pour le moment.
-      </p>
-      <div style="text-align:center;">
-        <a href="{{ path('default_home') }}"
-           style="display:inline-block;padding:10px 20px;border:1px solid #0ea5e9;border-radius:8px;background:#0ea5e9;color:white;text-decoration:none;font-weight:500;">
-          Découvrir les événements
-        </a>
-      </div>
+      <p class="muted" style="text-align:center;padding:16px">Vous n'êtes inscrit à aucun événement.</p>
+      <div style="text-align:center"><a href="{{ path('default_home') }}" class="btn btn-ghost">Découvrir les événements</a></div>
     {% else %}
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+      <div class="cards">
         {% for inscription in mesInscriptions %}
           {% set e = inscription.evenement %}
-          <article style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#f9fafb;">
-            {% if e.image %}
-              <img src="{{ asset(e.image) }}" alt="Image de {{ e.titre }}" style="width:100%;height:140px;object-fit:cover;">
-            {% else %}
-              <img src="{{ asset('img/default.jpg') }}" alt="Image par défaut" style="width:100%;height:140px;object-fit:cover;">
-            {% endif %}
-            
-            <div style="padding:12px;">
-              <h3 style="margin:0 0 8px 0;font-size:1rem;">{{ e.titre }}</h3>
-              
-              <p style="margin:0 0 6px 0;color:#555;font-size:0.9rem;">
-                📅 {{ e.dateDebut ? e.dateDebut|date('d/m/Y H:i') : 'Date à venir' }}
-              </p>
-              
-              {% if e.lieu %}
-                <p style="margin:0 0 6px 0;color:#555;font-size:0.9rem;">
-                  📍 {{ e.lieu.ville ?: '' }}{% if e.lieu.pays %}, {{ e.lieu.pays }}{% endif %}
-                </p>
-              {% endif %}
-              
-              <p style="margin:0 0 10px 0;color:#6b7280;font-size:0.85rem;">
-                Inscrit le {{ inscription.dateInscription ? inscription.dateInscription|date('d/m/Y') : '—' }}
-              </p>
-              
-              <div style="display:flex;gap:8px;">
-                <a href="{{ path('evenement_show', {id: e.id}) }}"
-                   style="flex:1;text-align:center;padding:6px 10px;border:1px solid #0ea5e9;border-radius:6px;text-decoration:none;color:#075985;font-size:0.9rem;">
-                  Voir détails
-                </a>
-                
-                <form method="post" action="{{ path('evenement_unregister', {id: e.id}) }}" style="flex:1;">
+          <article class="mini">
+            {% if e.image %}<img src="{{ asset(e.image) }}" alt="Image de {{ e.titre }}">{% else %}<img src="{{ asset('img/default.jpg') }}" alt="Image par défaut">{% endif %}
+            <div class="body">
+              <h3 style="margin:0 0 8px;font-size:1rem">{{ e.titre }}</h3>
+              <p class="muted" style="margin:0 0 6px">📅 {{ e.dateDebut ? e.dateDebut|date('d/m/Y H:i') : 'Date à venir' }}</p>
+              {% if e.lieu %}<p class="muted" style="margin:0 0 6px">📍 {{ e.lieu.ville ?: '' }}{% if e.lieu.pays %}, {{ e.lieu.pays }}{% endif %}</p>{% endif %}
+              <p class="muted" style="margin:0 0 10px">Inscrit le {{ inscription.dateInscription ? inscription.dateInscription|date('d/m/Y') : '—' }}</p>
+              <div class="actions">
+                <a href="{{ path('evenement_show', {id: e.id}) }}" class="btn btn-ghost" style="flex:1;text-align:center">Voir détails</a>
+                <form method="post" action="{{ path('evenement_unregister', {id: e.id}) }}" style="flex:1">
                   <input type="hidden" name="_token" value="{{ csrf_token('desinscrire_' ~ e.id) }}">
-                  <button type="submit"
-                          style="width:100%;padding:6px 10px;border:1px solid #dc2626;border-radius:6px;background:#dc2626;color:white;cursor:pointer;font-size:0.9rem;">
-                    Se désinscrire
-                  </button>
+                  <button type="submit" class="btn btn-danger" style="width:100%">Se désinscrire</button>
                 </form>
               </div>
             </div>
@@ -132,60 +104,32 @@
         {% endfor %}
       </div>
     {% endif %}
-  </div>
+  </section>
 
   {% if mesEvenementsCrees is not empty %}
-    <div style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:24px;box-shadow:0 2px 6px rgba(0,0,0,0.1);">
-      <h2 style="margin-top:0;margin-bottom:20px;color:#111827;border-bottom:2px solid #16a34a;padding-bottom:10px;">
-        ✨ Événements que j'ai créés ({{ mesEvenementsCrees|length }})
-      </h2>
-      
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+    <section class="card">
+      <h2 class="section-title" style="border-color:var(--success)">✨ Événements que j'ai créés ({{ mesEvenementsCrees|length }})</h2>
+      <div class="cards">
         {% for e in mesEvenementsCrees %}
-          <article style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#f9fafb;">
-            {% if e.image %}
-              <img src="{{ asset(e.image) }}" alt="Image de {{ e.titre }}" style="width:100%;height:140px;object-fit:cover;">
-            {% else %}
-              <img src="{{ asset('img/default.jpg') }}" alt="Image par défaut" style="width:100%;height:140px;object-fit:cover;">
-            {% endif %}
-            
-            <div style="padding:12px;">
-              <h3 style="margin:0 0 8px 0;font-size:1rem;">{{ e.titre }}</h3>
-              
-              <p style="margin:0 0 6px 0;color:#555;font-size:0.9rem;">
-                📅 {{ e.dateDebut ? e.dateDebut|date('d/m/Y H:i') : 'Date à venir' }}
-              </p>
-              
-              <p style="margin:0 0 10px 0;color:#6b7280;font-size:0.85rem;">
-                👥 {{ e.inscriptions|length }} inscrit(s)
-                {% if e.capaciteMax %} / {{ e.capaciteMax }}{% endif %}
-              </p>
-              
-              <div style="display:flex;gap:8px;">
-                <a href="{{ path('evenement_show', {id: e.id}) }}"
-                   style="flex:1;text-align:center;padding:6px 10px;border:1px solid #0ea5e9;border-radius:6px;text-decoration:none;color:#075985;font-size:0.9rem;">
-                  Voir détails
-                </a>
-                
+          <article class="mini">
+            {% if e.image %}<img src="{{ asset(e.image) }}" alt="Image de {{ e.titre }}">{% else %}<img src="{{ asset('img/default.jpg') }}" alt="Image par défaut">{% endif %}
+            <div class="body">
+              <h3 style="margin:0 0 8px;font-size:1rem">{{ e.titre }}</h3>
+              <p class="muted" style="margin:0 0 6px">📅 {{ e.dateDebut ? e.dateDebut|date('d/m/Y H:i') : 'Date à venir' }}</p>
+              <p class="muted" style="margin:0 0 10px">👥 {{ e.inscriptions|length }} inscrit(s){% if e.capaciteMax %} / {{ e.capaciteMax }}{% endif %}</p>
+              <div class="actions">
+                <a href="{{ path('evenement_show', {id: e.id}) }}" class="btn btn-ghost" style="flex:1;text-align:center">Voir détails</a>
                 {% if 'ROLE_ADMIN' in user.roles %}
-                  <a href="{{ path('admin_evenement_edit', {id: e.id}) }}"
-                     style="flex:1;text-align:center;padding:6px 10px;border:1px solid #16a34a;border-radius:6px;background:#16a34a;color:white;text-decoration:none;font-size:0.9rem;">
-                    Modifier
-                  </a>
+                  <a href="{{ path('admin_evenement_edit', {id: e.id}) }}" class="btn btn-info" style="flex:1;text-align:center">Modifier</a>
                 {% endif %}
               </div>
             </div>
           </article>
         {% endfor %}
       </div>
-    </div>
+    </section>
   {% endif %}
 
-  <div style="margin-top:30px;">
-    <a href="{{ path('default_home') }}"
-       style="display:inline-block;padding:10px 16px;border:1px solid #9ca3af;border-radius:8px;background:#f3f4f6;color:#374151;text-decoration:none;">
-      ← Retour à l'accueil
-    </a>
-  </div>
+  <div style="margin-top:16px"><a href="{{ path('default_home') }}" class="btn btn-ghost">← Retour à l'accueil</a></div>
 </div>
 {% endblock %}
