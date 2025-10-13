@@ -24,6 +24,5 @@ final class UtilisateurChecker implements UserCheckerInterface
 
     public function checkPostAuth(UserInterface $user): void
     {
-        // Aucun contrôle supplémentaire post-authentification pour le moment.
     }
 }

@@ -25,6 +25,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 180, unique: true, nullable: true)]
     private ?string $email = null;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $image = null;
+
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
@@ -88,6 +91,17 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(?string $password): self
     {
         $this->password = $password;
+        return $this;
+    }
+
+        public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): self
+    {
+        $this->image = $image;
         return $this;
     }
 
