@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+{% block title %}Gestion des utilisateurs{% endblock %}
+
+{% block body %}
+    <div class="page-container">
+        <h1 class="section-title">🔧 Gestion des utilisateurs</h1>
+        <p class="section-subtitle">
+            Consultez la liste des comptes et appliquez des actions d'administration : attribution de rôles, bannissement ou réactivation.
+        </p>
+
+        {% if utilisateurs is empty %}
+            <div class="empty-state">
+                Aucun utilisateur n'est enregistré pour le moment.
+            </div>
+        {% else %}
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Utilisateur</th>
+                            <th>Email</th>
+                            <th>Statut</th>
+                            <th>Rôles</th>
+                            <th class="text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for u in utilisateurs %}
+                        {% set isAdmin = 'ROLE_ADMIN' in u.roles %}
+                        {% set isBanned = 'ROLE_BANNED' in u.roles %}
+                        {% set isSelf = app.user and app.user.id == u.id %}
+                        <tr{% if isBanned %} class="table-row--banned"{% endif %}>
+                            <td>
+                                <div class="user-name">{{ u.prenom ?: '' }} {{ u.nom ?: '' }}</div>
+                                <div class="data-item-title">ID #{{ u.id }}</div>
+                            </td>
+                            <td>{{ u.email ?: '—' }}</td>
+                            <td>
+                                {% if isBanned %}
+                                    <span class="badge badge-danger">Banni</span>
+                                {% else %}
+                                    <span class="badge badge-success">Actif</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set displayedRoles = [] %}
+                                {% for role in u.roles %}
+                                    {% if role != 'ROLE_USER' %}
+                                        {% set displayedRoles = displayedRoles|merge([role]) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if displayedRoles is not empty %}
+                                    <div class="role-grid">
+                                        {% for role in displayedRoles %}
+                                            <span class="badge badge-info">{{ role }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <span class="data-item-title">ROLE_USER</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-right">
+                                <div class="table-actions">
+                                    <form method="post" action="{{ path(isAdmin ? 'admin_utilisateur_demote' : 'admin_utilisateur_promote', {id: u.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token((isAdmin ? 'demote_user_' : 'promote_user_') ~ u.id) }}">
+                                        <button class="btn {% if isAdmin %}btn-warning{% else %}btn-primary{% endif %}" type="submit" {% if isSelf %}disabled{% endif %}>
+                                            {{ isAdmin ? 'Retirer le rôle admin' : 'Nommer admin' }}
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{{ path(isBanned ? 'admin_utilisateur_unban' : 'admin_utilisateur_ban', {id: u.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token((isBanned ? 'unban_user_' : 'ban_user_') ~ u.id) }}">
+                                        <button class="btn {% if isBanned %}btn-success{% else %}btn-danger{% endif %}" type="submit" {% if isSelf %}disabled{% endif %}>
+                                            {{ isBanned ? 'Réactiver' : 'Bannir' }}
+                                        </button>
+                                    </form>
+                                </div>
+                                {% if isSelf %}
+                                    <div class="status-note">Action impossible sur votre propre compte.</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

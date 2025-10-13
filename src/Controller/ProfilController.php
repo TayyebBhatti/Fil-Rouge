@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Utilisateur;
 use App\Repository\InscriptionRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,8 +18,8 @@ final class ProfilController extends AbstractController
     public function index(InscriptionRepository $inscriptions): Response
     {
         $user = $this->getUser();
-        
-        if (!$user) {
+
+        if (!$user instanceof Utilisateur) {
             return $this->redirectToRoute('default_login');
         }
 
@@ -34,10 +35,7 @@ final class ProfilController extends AbstractController
             ->getResult();
 
         // Récupérer les événements créés par l'utilisateur (si applicable)
-        $mesEvenementsCrees = [];
-        if (method_exists($user, 'getEvenementsCrees')) {
-            $mesEvenementsCrees = $user->getEvenementsCrees()->toArray();
-        }
+        $mesEvenementsCrees = $user->getEvenementsCrees()->toArray();
 
         return $this->render('profil/index.html.twig', [
             'user' => $user,

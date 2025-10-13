@@ -2,90 +2,83 @@
 {% block title %}Détails de l’événement{% endblock %}
 
 {% block body %}
-  {% for msg in app.flashes('success') %}
-    <div style="padding:8px;border:1px solid #16a34a;color:#14532d;border-radius:8px;margin-bottom:10px;">{{ msg }}</div>
-  {% endfor %}
-  {% for msg in app.flashes('error') %}
-    <div style="padding:8px;border:1px solid #dc2626;color:#7f1d1d;border-radius:8px;margin-bottom:10px;">{{ msg }}</div>
-  {% endfor %}
+    <div class="page-container">
+        {% for msg in app.flashes('success') %}
+            <div class="flash flash--success">{{ msg }}</div>
+        {% endfor %}
+        {% for msg in app.flashes('error') %}
+            <div class="flash flash--error">{{ msg }}</div>
+        {% endfor %}
 
-  <div style="max-width:800px;margin:20px auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.1);background:white;">
-    {% if evenement.image %}
-      <img src="{{ asset(evenement.image) }}" alt="Image de {{ evenement.titre }}" style="width:100%;height:350px;object-fit:cover;">
-    {% else %}
-      <img src="{{ asset('img/default.jpg') }}" alt="Image par défaut" style="width:100%;height:350px;object-fit:cover;">
-    {% endif %}
+        <article class="card card--no-padding">
+            {% if evenement.image %}
+                <img class="event-cover" src="{{ asset(evenement.image) }}" alt="Image de {{ evenement.titre }}">
+            {% else %}
+                <img class="event-cover" src="{{ asset('img/default.jpg') }}" alt="Image par défaut">
+            {% endif %}
 
-    <div style="padding:20px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-        <h1 style="margin:0;">{{ evenement.titre ?? ('Événement #' ~ evenement.id) }}</h1>
-        <a href="{{ path('default_home') }}"
-           style="padding:8px 12px;border:1px solid #9ca3af;border-radius:8px;background:#f3f4f6;color:#111827;text-decoration:none;font-size:0.9rem;cursor:pointer;">
-          ← Retour
-        </a>
-      </div>
+            <div class="event-detail">
+                <div class="card-header event-detail__header">
+                    <h1 class="event-detail__title">{{ evenement.titre ?? ('Événement #' ~ evenement.id) }}</h1>
+                    <a class="btn btn-ghost" href="{{ path('default_home') }}">← Retour</a>
+                </div>
 
-      <p style="margin:0 0 10px 0;color:#555;">
-        Du {{ evenement.dateDebut ? evenement.dateDebut|date('d/m/Y H:i') : 'Date à venir' }}
-        {% if evenement.dateFin %} au {{ evenement.dateFin|date('d/m/Y H:i') }}{% endif %}
-      </p>
+                <div class="event-meta">
+                    <span>📅 Du {{ evenement.dateDebut ? evenement.dateDebut|date('d/m/Y H:i') : 'Date à venir' }}{% if evenement.dateFin %} au {{ evenement.dateFin|date('d/m/Y H:i') }}{% endif %}</span>
 
-      {% if createur %}
-        <p style="margin:0 0 10px 0;">👤 Créé par :
-          <strong>
-            {% if createur.prenom is defined %}{{ createur.prenom }} {% endif %}
-            {% if createur.nom is defined %}{{ createur.nom }}{% endif %}
-          </strong>
-        </p>
-      {% endif %}
+                    {% if createur %}
+                        <span>👤 Créé par :
+                            <strong>
+                                {% if createur.prenom is defined %}{{ createur.prenom }} {% endif %}
+                                {% if createur.nom is defined %}{{ createur.nom }}{% endif %}
+                            </strong>
+                        </span>
+                    {% endif %}
 
-      {% if evenement.lieu %}
-        <p style="margin:0 0 10px 0;">
-          📍
-          {% if evenement.lieu.rue is defined and evenement.lieu.rue %}{{ evenement.lieu.rue }}, {% endif %}
-          {% if evenement.lieu.code_postal is defined and evenement.lieu.code_postal %}{{ evenement.lieu.code_postal }} {% endif %}
-          {% if evenement.lieu.ville is defined and evenement.lieu.ville %}{{ evenement.lieu.ville }}{% endif %}
-          {% if evenement.lieu.pays is defined and evenement.lieu.pays %} • {{ evenement.lieu.pays }}{% endif %}
-        </p>
-      {% endif %}
+                    {% if evenement.lieu %}
+                        <span>
+                            📍
+                            {% if evenement.lieu.rue is defined and evenement.lieu.rue %}{{ evenement.lieu.rue }}, {% endif %}
+                            {% if evenement.lieu.code_postal is defined and evenement.lieu.code_postal %}{{ evenement.lieu.code_postal }} {% endif %}
+                            {% if evenement.lieu.ville is defined and evenement.lieu.ville %}{{ evenement.lieu.ville }}{% endif %}
+                            {% if evenement.lieu.pays is defined and evenement.lieu.pays %} • {{ evenement.lieu.pays }}{% endif %}
+                        </span>
+                    {% endif %}
 
-      {% if evenement.categorie %}
-        <p style="margin:0 0 10px 0;">🏷️ Catégorie : {{ evenement.categorie.nom ?? evenement.categorie }}</p>
-      {% endif %}
+                    {% if evenement.categorie %}
+                        <span>🏷️ Catégorie : {{ evenement.categorie.nom ?? evenement.categorie }}</span>
+                    {% endif %}
+                </div>
 
-      {% if evenement.description %}
-        <p style="margin:15px 0;white-space:pre-line;">{{ evenement.description }}</p>
-      {% endif %}
+                {% if evenement.description %}
+                    <div class="content-box">
+                        <p>{{ evenement.description }}</p>
+                    </div>
+                {% endif %}
 
-      {% set nbInsc = evenement.inscriptions is defined ? evenement.inscriptions|length : 0 %}
-      {% if evenement.capaciteMax is defined %}
-        <p style="margin:10px 0;">👥 {{ nbInsc }}/{{ evenement.capaciteMax }} inscrits</p>
-      {% endif %}
+                {% set nbInsc = evenement.inscriptions is defined ? evenement.inscriptions|length : 0 %}
+                {% if evenement.capaciteMax is defined %}
+                    <span class="badge badge-info badge-align-start">👥 {{ nbInsc }}/{{ evenement.capaciteMax }} inscrit(s)</span>
+                {% endif %}
 
-      <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap;">
-        {% if app.user %}
-          {% if dejaInscrit %}
-            <form method="post" action="{{ path('evenement_unregister', {id: evenement.id}) }}">
-              <input type="hidden" name="_token" value="{{ csrf_token('desinscrire_' ~ evenement.id) }}">
-              <button type="submit" style="padding:10px 16px;border:1px solid #dc2626;border-radius:8px;background:#dc2626;color:white;cursor:pointer;">
-                Se désinscrire
-              </button>
-            </form>
-          {% else %}
-            <form method="post" action="{{ path('evenement_register', {id: evenement.id}) }}">
-              <input type="hidden" name="_token" value="{{ csrf_token('inscrire_' ~ evenement.id) }}">
-              <button type="submit" style="padding:10px 16px;border:1px solid #16a34a;border-radius:8px;background:#16a34a;color:white;cursor:pointer;">
-                S’inscrire
-              </button>
-            </form>
-          {% endif %}
-        {% else %}
-          <a href="{{ path('default_login') }}"
-             style="display:inline-block;padding:10px 16px;border:1px solid #0ea5e9;border-radius:8px;color:#075985;text-decoration:none;">
-            Se connecter pour s’inscrire
-          </a>
-        {% endif %}
-      </div>
+                <div class="form-actions">
+                    {% if app.user %}
+                        {% if dejaInscrit %}
+                            <form method="post" action="{{ path('evenement_unregister', {id: evenement.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('desinscrire_' ~ evenement.id) }}">
+                                <button class="btn btn-danger" type="submit">Se désinscrire</button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{{ path('evenement_register', {id: evenement.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('inscrire_' ~ evenement.id) }}">
+                                <button class="btn btn-success" type="submit">S’inscrire</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <a class="btn btn-primary" href="{{ path('default_login') }}">Se connecter pour s’inscrire</a>
+                    {% endif %}
+                </div>
+            </div>
+        </article>
     </div>
-  </div>
 {% endblock %}

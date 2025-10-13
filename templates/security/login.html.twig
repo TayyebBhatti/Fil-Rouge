@@ -1,13 +1,9 @@
 {% extends 'base.html.twig' %}
 {% block title %}Connexion{% endblock %}
 
-{% block stylesheets %}
-
-{% endblock %}
-
 {% block body %}
-<div class="auth-wrap">
-  <div class="card">
+<div class="auth-page">
+  <div class="auth-card">
     <h2>Connexion</h2>
 
     {% if error %}
@@ -23,11 +19,15 @@
       </div>
     {% else %}
       <form method="post" action="{{ path('default_login') }}">
-        <label for="inputEmail">Email</label>
-        <input type="email" id="inputEmail" name="_username" value="{{ last_username }}" required autofocus>
+        <div>
+          <label for="inputEmail">Email</label>
+          <input type="email" id="inputEmail" name="_username" value="{{ last_username }}" required autofocus>
+        </div>
 
-        <label for="inputPassword">Mot de passe</label>
-        <input type="password" id="inputPassword" name="_password" required>
+        <div>
+          <label for="inputPassword">Mot de passe</label>
+          <input type="password" id="inputPassword" name="_password" required>
+        </div>
 
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
         <button class="btn" type="submit">Se connecter</button>

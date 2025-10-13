@@ -1,47 +1,51 @@
 {% extends 'base.html.twig' %}
 {% block title %}Gestion des événements{% endblock %}
 {% block body %}
-  <h1 style="margin-bottom:20px;">Gestion des événements</h1>
+    <div class="page-container">
+        <div class="card profile-section">
+            <div class="card-header">
+                <h1 class="card-title">Gestion des événements</h1>
+                <a class="btn btn-success" href="{{ path('admin_evenement_new') }}">+ Ajouter un événement</a>
+            </div>
 
-  <a href="{{ path('admin_evenement_new') }}"
-     style="padding:10px 16px;border:1px solid #16a34a;border-radius:8px;background:#16a34a;color:white;text-decoration:none;">
-    + Ajouter un événement
-  </a>
-
-  <table style="width:100%;margin-top:20px;border-collapse:collapse;">
-    <thead>
-      <tr style="background:#f3f4f6;text-align:left;">
-        <th style="padding:8px;">ID</th>
-        <th style="padding:8px;">Titre</th>
-        <th style="padding:8px;">Date début</th>
-        <th style="padding:8px;">Capacité</th>
-        <th style="padding:8px;">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for e in evenements %}
-        <tr style="border-bottom:1px solid #e5e7eb;">
-          <td style="padding:8px;">{{ e.id }}</td>
-          <td style="padding:8px;">{{ e.titre }}</td>
-          <td style="padding:8px;">{{ e.dateDebut ? e.dateDebut|date('d/m/Y H:i') : '' }}</td>
-          <td style="padding:8px;">{{ e.capaciteMax ?? '-' }}</td>
-          <td style="padding:8px;">
-            <a href="{{ path('admin_evenement_edit', {id: e.id}) }}"
-               style="padding:6px 10px;border:1px solid #0ea5e9;border-radius:6px;color:#075985;text-decoration:none;">Modifier</a>
-            <form method="post" action="{{ path('admin_evenement_delete', {id: e.id}) }}"
-                  style="display:inline;"
-                  onsubmit="return confirm('Supprimer cet événement ?');">
-              <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ e.id) }}">
-              <button type="submit"
-                      style="padding:6px 10px;border:1px solid #dc2626;border-radius:6px;background:#dc2626;color:white;cursor:pointer;">
-                Supprimer
-              </button>
-            </form>
-          </td>
-        </tr>
-      {% else %}
-        <tr><td colspan="5" style="padding:8px;">Aucun événement.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+            {% if evenements is empty %}
+                <div class="empty-state">
+                    Aucun événement n'est enregistré.
+                </div>
+            {% else %}
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Titre</th>
+                                <th>Date début</th>
+                                <th>Capacité</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for e in evenements %}
+                                <tr>
+                                    <td>{{ e.id }}</td>
+                                    <td>{{ e.titre }}</td>
+                                    <td>{{ e.dateDebut ? e.dateDebut|date('d/m/Y H:i') : '' }}</td>
+                                    <td>{{ e.capaciteMax ?? '—' }}</td>
+                                    <td class="text-right">
+                                        <div class="table-actions">
+                                            <a class="btn btn-outline" href="{{ path('admin_evenement_edit', {id: e.id}) }}">Modifier</a>
+                                            <form method="post" action="{{ path('admin_evenement_delete', {id: e.id}) }}" onsubmit="return confirm('Supprimer cet événement ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ e.id) }}">
+                                                <button class="btn btn-danger" type="submit">Supprimer</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}
