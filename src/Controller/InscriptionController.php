@@ -55,6 +55,6 @@ class InscriptionController extends AbstractController
         $this->em->flush();
 
         $this->addFlash('success', 'Compte créé.');
-        return $this->redirectToRoute('default_login'); // adapte la route si besoin
+        return $this->redirectToRoute('default_login'); 
     }
 }

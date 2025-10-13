@@ -20,14 +20,12 @@ final class DefaultController extends AbstractController
         EvenementRepository $evenements,
         InscriptionRepository $inscriptions
     ): Response {
-        // Événements avec jointures utiles
         $list = $evenements->createQueryBuilder('e')
             ->leftJoin('e.categorie', 'c')->addSelect('c')
             ->leftJoin('e.lieu', 'l')->addSelect('l')
             ->orderBy('e.dateDebut', 'ASC')
             ->getQuery()->getResult();
 
-        // Id des événements où l’utilisateur courant est inscrit
         $registeredEventIds = [];
         if ($this->getUser()) {
             foreach ($inscriptions->findBy(['utilisateur' => $this->getUser()]) as $insc) {

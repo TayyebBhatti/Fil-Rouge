@@ -26,6 +26,5 @@ final class SecurityController extends AbstractController
     #[Route('/logout', name: 'app_logout')]
     public function logout(): void
     {
-        // Géré automatiquement par Symfony
     }
 }

@@ -114,7 +114,6 @@ final class AdminEvenementController extends AbstractController
             return;
         }
 
-        // findOneBy utilise les NOMS DE PROPRIÉTÉS PHP (camelCase), pas les noms de colonnes SQL
         $existant = $lieux->findOneBy([
             'rue'        => $rue === '' ? null : $rue,
             'codePostal' => $code === '' ? null : $code,
@@ -127,9 +126,8 @@ final class AdminEvenementController extends AbstractController
             return;
         }
 
-        // Nouvel objet: convertir chaînes vides en null
         $lieu->setRue($rue === '' ? null : $rue);
-        $lieu->setCodePostal($code === '' ? null : $code);       // <-- camelCase
+        $lieu->setCodePostal($code === '' ? null : $code);   
         $lieu->setVille($ville === '' ? null : $ville);
         $lieu->setPays($pays === '' ? null : $pays);
         $em->persist($lieu);
@@ -138,7 +136,6 @@ final class AdminEvenementController extends AbstractController
     /** @return array{0: string[], 1: string[], 2: string[], 3: string[]} */
     private function distinctLieuValues(LieuRepository $lieux): array
     {
-        // DQL/QueryBuilder utilisent aussi le nom de PROPRIÉTÉ, donc 'codePostal'
         $fetch = function (string $field) use ($lieux): array {
             $rows = $lieux->createQueryBuilder('l')
                 ->select("DISTINCT l.$field AS v")
@@ -151,7 +148,7 @@ final class AdminEvenementController extends AbstractController
         };
 
         $rues   = $fetch('rue');
-        $codes  = $fetch('codePostal');  // <-- camelCase
+        $codes  = $fetch('codePostal'); 
         $villes = $fetch('ville');
         $pays   = $fetch('pays');
 

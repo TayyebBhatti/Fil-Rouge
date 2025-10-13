@@ -26,7 +26,6 @@ final class EvenementController extends AbstractController
             ]);
         }
 
-        // Récupération du créateur
         $createur = null;
         if (method_exists($evenement, 'getCreateur')) {
             $createur = $evenement->getCreateur();

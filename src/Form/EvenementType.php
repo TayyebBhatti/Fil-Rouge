@@ -31,7 +31,6 @@ final class EvenementType extends AbstractType
                 'label' => 'Catégorie',
                 'required' => false,
             ])
-            // Ici on permet de créer ou modifier un Lieu librement
             ->add('lieu', LieuType::class, [
                 'label' => 'Lieu',
                 'required' => false,
