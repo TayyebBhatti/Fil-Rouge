@@ -1,0 +1,97 @@
+{% extends 'base.html.twig' %}
+{% block title %}Gestion des utilisateurs{% endblock %}
+
+{% block body %}
+<div style="max-width:1200px;margin:0 auto;padding:20px;">
+  <h1 style="margin-bottom:10px;">🔧 Gestion des utilisateurs</h1>
+  <p style="margin-bottom:30px;color:#4b5563;">
+    Consultez la liste des comptes et préparez les actions d'administration : attribution de rôles, bannissement,
+    réinitialisation des accès…
+  </p>
+
+  {% if utilisateurs is empty %}
+    <div style="padding:24px;border:1px dashed #d1d5db;border-radius:12px;text-align:center;color:#6b7280;background:#f9fafb;">
+      Aucun utilisateur n'est enregistré pour le moment.
+    </div>
+  {% else %}
+    <div style="overflow-x:auto;background:white;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.08);">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead style="background:#0ea5e9;color:white;text-align:left;">
+          <tr>
+            <th style="padding:12px 16px;font-weight:600;">Utilisateur</th>
+            <th style="padding:12px 16px;font-weight:600;">Email</th>
+            <th style="padding:12px 16px;font-weight:600;">Statut</th>
+            <th style="padding:12px 16px;font-weight:600;">Rôles</th>
+            <th style="padding:12px 16px;font-weight:600;text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for u in utilisateurs %}
+          {% set isAdmin = 'ROLE_ADMIN' in u.roles %}
+          {% set isBanned = 'ROLE_BANNED' in u.roles %}
+          {% set isSelf = app.user and app.user.id == u.id %}
+          <tr style="border-bottom:1px solid #e5e7eb;{% if isBanned %}background:#fef2f2;{% endif %}">
+            <td style="padding:14px 16px;">
+              <div style="font-weight:600;color:#111827;">{{ u.prenom ?: '' }} {{ u.nom ?: '' }}</div>
+              <div style="font-size:0.85rem;color:#6b7280;">ID #{{ u.id }}</div>
+            </td>
+            <td style="padding:14px 16px;color:#1f2937;">{{ u.email ?: '—' }}</td>
+            <td style="padding:14px 16px;">
+              {% if isBanned %}
+                <span style="display:inline-block;padding:4px 10px;border-radius:999px;background:#fee2e2;color:#b91c1c;font-size:0.8rem;font-weight:600;">
+                  Banni
+                </span>
+              {% else %}
+                <span style="display:inline-block;padding:4px 10px;border-radius:999px;background:#dcfce7;color:#166534;font-size:0.8rem;font-weight:600;">
+                  Actif
+                </span>
+              {% endif %}
+            </td>
+            <td style="padding:14px 16px;">
+              {% set displayedRoles = [] %}
+              {% for role in u.roles %}
+                {% if role != 'ROLE_USER' %}
+                  {% set displayedRoles = displayedRoles|merge([role]) %}
+                {% endif %}
+              {% endfor %}
+              {% if displayedRoles is not empty %}
+                {% for role in displayedRoles %}
+                  <span style="display:inline-block;margin:2px 6px 2px 0;padding:4px 10px;border-radius:999px;background:#e0f2fe;color:#0369a1;font-size:0.8rem;">
+                    {{ role }}
+                  </span>
+                {% endfor %}
+              {% else %}
+                <span style="color:#6b7280;">ROLE_USER</span>
+              {% endif %}
+            </td>
+            <td style="padding:14px 16px;text-align:right;">
+              <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;">
+                <form method="post" action="{{ path(isAdmin ? 'admin_utilisateur_demote' : 'admin_utilisateur_promote', {id: u.id}) }}" style="margin:0;">
+                  <input type="hidden" name="_token" value="{{ csrf_token((isAdmin ? 'demote_user_' : 'promote_user_') ~ u.id) }}">
+                  <button type="submit"
+                          {% if isSelf %}disabled{% endif %}
+                          style="padding:6px 12px;border-radius:6px;border:1px solid {{ isAdmin ? '#f59e0b' : '#0ea5e9' }};background:{{ isAdmin ? '#fef3c7' : '#0ea5e9' }};color:{{ isAdmin ? '#b45309' : 'white' }};font-size:0.85rem;cursor:{{ isSelf ? 'not-allowed' : 'pointer' }};opacity:{{ isSelf ? '0.6' : '1' }};">
+                    {{ isAdmin ? 'Retirer le rôle admin' : 'Nommer admin' }}
+                  </button>
+                </form>
+                <form method="post" action="{{ path(isBanned ? 'admin_utilisateur_unban' : 'admin_utilisateur_ban', {id: u.id}) }}" style="margin:0;">
+                  <input type="hidden" name="_token" value="{{ csrf_token((isBanned ? 'unban_user_' : 'ban_user_') ~ u.id) }}">
+                  <button type="submit"
+                          {% if isSelf %}disabled{% endif %}
+                          style="padding:6px 12px;border-radius:6px;border:1px solid {{ isBanned ? '#16a34a' : '#dc2626' }};background:{{ isBanned ? '#dcfce7' : '#dc2626' }};color:{{ isBanned ? '#166534' : 'white' }};font-size:0.85rem;cursor:{{ isSelf ? 'not-allowed' : 'pointer' }};opacity:{{ isSelf ? '0.6' : '1' }};">
+                    {{ isBanned ? 'Réactiver' : 'Bannir' }}
+                  </button>
+                </form>
+              </div>
+              {% if isSelf %}
+                <div style="margin-top:6px;font-size:0.75rem;color:#6b7280;">Action impossible sur votre propre compte.</div>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
