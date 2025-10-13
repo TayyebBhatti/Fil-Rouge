@@ -1,56 +1,129 @@
 {% extends 'base.html.twig' %}
 {% block title %}Créer un événement{% endblock %}
+
+{% block stylesheets %}
+<style>
+  :root{
+    --bg:#f6f8fb; --card:#fff; --text:#111827; --muted:#6b7280;
+    --primary:#16a34a; --primary-hover:#15803d; --info:#0ea5e9;
+    --border:#e5e7eb; --danger:#dc2626; --shadow:0 8px 24px rgba(0,0,0,.08)
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial,"Noto Sans",sans-serif;background:var(--bg);color:var(--text)}
+  .wrap{max-width:960px;margin:24px auto;padding:0 16px}
+  .page-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+  .title{margin:0;font-size:22px}
+  .muted{color:var(--muted);font-size:14px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+  .card-body{padding:20px}
+  .grid{display:grid;gap:14px}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:720px){ .grid-2{grid-template-columns:1fr} }
+
+  /* Form */
+  label{display:block;font-size:14px;margin:0 0 6px;color:var(--muted)}
+  input[type="text"],input[type="email"],input[type="number"],input[type="datetime-local"],
+  input[type="file"],select,textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:14px
+  }
+  textarea{min-height:120px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--info);box-shadow:0 0 0 3px rgba(14,165,233,.15)}
+  .errors{margin-top:6px;color:var(--danger);font-size:13px}
+
+  fieldset{border:1px solid var(--border);border-radius:12px;padding:12px}
+  legend{padding:0 8px;color:#374151;font-size:14px}
+
+  /* Alerts */
+  .alert{border:1px solid #fcd34d;background:#fef9c3;color:#854d0e;border-radius:10px;padding:10px 12px;font-size:14px}
+  .alert + .alert{margin-top:10px}
+
+  /* Actions */
+  .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  .btn{display:inline-block;padding:10px 16px;border-radius:10px;border:1px solid transparent;font-weight:600;cursor:pointer;text-decoration:none}
+  .btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn-primary:hover{background:var(--primary-hover)}
+  .btn-ghost{background:#fff;border-color:var(--border);color:#0b1220}
+  .btn-ghost:hover{border-color:#cbd5e1}
+  .link{color:var(--info);text-decoration:none}
+  .link:hover{text-decoration:underline}
+</style>
+{% endblock %}
+
 {% block body %}
-  <h1>Créer un événement</h1>
+<div class="wrap">
 
-  {{ form_start(form) }}
-    <div style="display:grid;grid-template-columns:1fr;gap:14px;max-width:720px;">
-      {{ form_row(form.titre) }}
-      {{ form_row(form.description) }}
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        {{ form_row(form.dateDebut) }}
-        {{ form_row(form.dateFin) }}
-      </div>
-      {{ form_row(form.capaciteMax) }}
-      {{ form_row(form.categorie) }}
-
-      <fieldset style="border:1px solid #e5e7eb;border-radius:10px;padding:12px;">
-        <legend style="padding:0 6px;color:#374151;">Lieu</legend>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          {{ form_row(form.lieu.rue) }}
-          {{ form_row(form.lieu.codePostal) }}
-          {{ form_row(form.lieu.ville) }}
-          {{ form_row(form.lieu.pays) }}
-        </div>
-
-        <datalist id="dl-rue">
-          {% for v in rues %}<option value="{{ v }}">{% endfor %}
-        </datalist>
-        <datalist id="dl-code">
-          {% for v in codes %}<option value="{{ v }}">{% endfor %}
-        </datalist>
-        <datalist id="dl-ville">
-          {% for v in villes %}<option value="{{ v }}">{% endfor %}
-        </datalist>
-        <datalist id="dl-pays">
-          {% for v in pays %}<option value="{{ v }}">{% endfor %}
-        </datalist>
-
-        <p style="margin-top:6px;color:#6b7280;font-size:0.9rem;">
-          Saisis librement. Les valeurs existantes sont proposées automatiquement.
-        </p>
-      </fieldset>
-
-      {{ form_row(form.image) }}
+  <div class="page-head">
+    <div>
+      <h1 class="title">Créer un événement</h1>
+      <p class="muted">Renseigne les informations clés. Tu pourras modifier plus tard.</p>
     </div>
+    <a class="link" href="{{ path('admin_evenement_index') }}">← Retour à la liste</a>
+  </div>
 
-    <button type="submit"
-            style="padding:10px 16px;margin-top:14px;border:1px solid #16a34a;border-radius:8px;background:#16a34a;color:white;">
-      Enregistrer
-    </button>
-  {{ form_end(form) }}
+  {% for m in app.flashes('warning') %}
+    <div class="alert" role="status" aria-live="polite">{{ m }}</div>
+  {% endfor %}
 
-  <a href="{{ path('admin_evenement_index') }}" style="display:inline-block;margin-top:15px;text-decoration:none;color:#075985;">
-    ← Retour à la liste
-  </a>
+  <div class="card">
+    <div class="card-body">
+      {{ form_start(form) }}
+        <div class="grid">
+
+          {{ form_row(form.titre, {
+            label: 'Titre',
+            row_attr: { class: 'form-row' },
+          }) }}
+
+          {{ form_row(form.description, {
+            label: 'Description',
+            row_attr: { class: 'form-row' },
+          }) }}
+
+          <div class="grid-2">
+            {{ form_row(form.dateDebut, { label: 'Date de début' }) }}
+            {{ form_row(form.dateFin,   { label: 'Date de fin' }) }}
+          </div>
+
+          <div class="grid-2">
+            {{ form_row(form.capaciteMax, { label: 'Capacité max.' }) }}
+            {{ form_row(form.categorie,   { label: 'Catégorie' }) }}
+          </div>
+
+          <fieldset>
+            <legend>Lieu</legend>
+            <div class="grid-2">
+              {{ form_row(form.lieu.rue,        { label: 'Rue' }) }}
+              {{ form_row(form.lieu.codePostal, { label: 'Code postal' }) }}
+              {{ form_row(form.lieu.ville,      { label: 'Ville' }) }}
+              {{ form_row(form.lieu.pays,       { label: 'Pays' }) }}
+            </div>
+            <p class="muted" style="margin-top:6px">Suggestion automatique si tu as activé les <code>datalist</code> dans ton formulaire.</p>
+
+            {# Placeholders pour listes si ton FormType ajoute attr { list: 'dl-*' } #}
+            <datalist id="dl-rue">
+              {% for v in rues %}<option value="{{ v }}">{% endfor %}
+            </datalist>
+            <datalist id="dl-code">
+              {% for v in codes %}<option value="{{ v }}">{% endfor %}
+            </datalist>
+            <datalist id="dl-ville">
+              {% for v in villes %}<option value="{{ v }}">{% endfor %}
+            </datalist>
+            <datalist id="dl-pays">
+              {% for v in pays %}<option value="{{ v }}">{% endfor %}
+            </datalist>
+          </fieldset>
+
+          {{ form_row(form.image, { label: 'Image (optionnel)' }) }}
+
+          <div class="actions">
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+            <a href="{{ path('admin_evenement_index') }}" class="btn btn-ghost">Annuler</a>
+          </div>
+        </div>
+      {{ form_end(form) }}
+    </div>
+  </div>
+
+</div>
 {% endblock %}
