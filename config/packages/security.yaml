@@ -33,6 +33,8 @@ security:
         path: /
 
   access_control:
-    - { path: ^/login, roles: PUBLIC_ACCESS }
+    - { path: ^/(_(profiler|wdt)|css|images|js), roles: PUBLIC_ACCESS }
+    - { path: ^/login$, roles: PUBLIC_ACCESS }
     - { path: ^/inscription, roles: PUBLIC_ACCESS }
+    - { path: ^/$, roles: PUBLIC_ACCESS }
     - { path: ^/, roles: ROLE_USER }

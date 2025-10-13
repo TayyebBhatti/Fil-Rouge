@@ -18,11 +18,9 @@ class DefaultController extends AbstractController
     #[Route('/', name: 'default_home', methods: ['GET'])]
     public function index(EvenementRepository $repo): Response
     {
-        // jointures légères pour éviter le N+1 sur categorie et lieu
         $evenements = $repo->createQueryBuilder('e')
             ->leftJoin('e.categorie', 'c')->addSelect('c')
             ->leftJoin('e.lieu', 'l')->addSelect('l')
-           // ->orderBy('e.dateDebut', 'ASC')     // adapte si ton champ diffère
             ->getQuery()->getResult();
         return $this->render('default/home.html.twig', [
             'evenements' => $evenements,
@@ -43,42 +41,6 @@ class DefaultController extends AbstractController
         return $this->render('default/details.html.twig');
         # return new Response('<h1>Hello World!</h1>');
     }
-
-    /**
-     * Page catégorie des évènements
-     * ex. https://localhost:8000/categorie/sport
-     * ex. https://localhost:8000/categorie/concert
-     * ex. https://localhost:8000/categorie/spectacle
-     * @return Response
-     */
-    #[Route('/categorie/{type}', name: 'default_category', methods: ['GET'])]
-    public function category($type)
-    {
-        return $this->render('default/category.html.twig', [
-            'type' => $type,
-        ]);
-    }
-
-    /**
-     * Page pour afficher un évènement
-     * ex. https://localhost:8000/{param:category}/{param:titre}_{param:id}
-     * ex. https://localhost:8000/spectacle/week-end-raclette-a-baggersee_875456
-     * @return Response
-     */
-    #[Route('/{category}/{title}_{id}', name: 'default_event', methods: ['GET'])]
-    public function event($category, $title, $id): Response
-    {
-        return new Response("
-            <h1>
-                Catégorie : $category
-                <br> Titre : $title,
-                <br> ID : $id,
-            </h1>
-        ");
-    }
-
-    
-
 
 
 }
