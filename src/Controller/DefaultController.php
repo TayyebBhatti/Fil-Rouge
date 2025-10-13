@@ -1,46 +1,48 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
+use App\Repository\EvenementRepository;
+use App\Repository\InscriptionRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
-use App\Repository\EvenementRepository;
+use Symfony\Component\Routing\Annotation\Route;
 
-
-class DefaultController extends AbstractController
+final class DefaultController extends AbstractController
 {
-
     /**
-     * Page d'accueil
-     * @return Response
+     * Page d'accueil publique.
      */
     #[Route('/', name: 'default_home', methods: ['GET'])]
-    public function index(EvenementRepository $repo): Response
-    {
-        $evenements = $repo->createQueryBuilder('e')
+    public function index(
+        EvenementRepository $evenements,
+        InscriptionRepository $inscriptions
+    ): Response {
+        // Événements avec jointures utiles
+        $list = $evenements->createQueryBuilder('e')
             ->leftJoin('e.categorie', 'c')->addSelect('c')
             ->leftJoin('e.lieu', 'l')->addSelect('l')
+            ->orderBy('e.dateDebut', 'ASC')
             ->getQuery()->getResult();
+
+        // Id des événements où l’utilisateur courant est inscrit
+        $registeredEventIds = [];
+        if ($this->getUser()) {
+            foreach ($inscriptions->findBy(['utilisateur' => $this->getUser()]) as $insc) {
+                $ev = $insc->getEvenement();
+                if ($ev) {
+                    $registeredEventIds[] = $ev->getId();
+                }
+            }
+        }
+
         return $this->render('default/home.html.twig', [
-            'evenements' => $evenements,
+            'evenements'         => $list,
+            'registeredEventIds' => $registeredEventIds,
         ]);
     }
 
-
-     #[Route('/login', name: 'default_login', methods: ['GET'])]
-    public function login()
-    {
-        return $this->render('security/login.html.twig');
-        # return new Response('<h1>Hello World!</h1>');
-    }
-
-     #[Route('/details', name: 'default_details', methods: ['GET'])]
-    public function details()
-    {
-        return $this->render('default/details.html.twig');
-        # return new Response('<h1>Hello World!</h1>');
-    }
-
-
+    
 }

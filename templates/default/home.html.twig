@@ -2,61 +2,111 @@
 {% block title %}Accueil{% endblock %}
 
 {% block body %}
-  <h1>Événements</h1>
+  {% for msg in app.flashes('success') %}
+    <div style="padding:8px;border:1px solid #16a34a;color:#14532d;border-radius:8px;margin-bottom:10px;">{{ msg }}</div>
+  {% endfor %}
+  {% for msg in app.flashes('error') %}
+    <div style="padding:8px;border:1px solid #dc2626;color:#7f1d1d;border-radius:8px;margin-bottom:10px;">{{ msg }}</div>
+  {% endfor %}
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <h1>Événements</h1>
+    {% if app.user and 'ROLE_ADMIN' in app.user.roles %}
+      <a href="{{ path('admin_evenement_index') }}"
+         style="padding:10px 16px;border:1px solid #16a34a;border-radius:8px;background:#16a34a;color:white;text-decoration:none;font-weight:500;">
+        + Modifier/Ajouter événements
+      </a>
+    {% endif %}
+  </div>
 
   {% if evenements is empty %}
-    <p>Aucun événement pour le moment.</p>
+    <p>Aucun événement.</p>
   {% else %}
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;">
       {% for e in evenements %}
-        <article style="border:1px solid #e5e7eb;border-radius:12px;padding:12px;">
-          {# Titre #}
-          <h2 style="margin:4px 0 6px;font-size:1.1rem;">
-            {{ e.titre ?? ('Événement #' ~ e.id) }}
-          </h2>
+        {% set nbInsc = e.inscriptions is defined ? e.inscriptions|length : 0 %}
+        {% set isRegistered = app.user and (e.id in registeredEventIds) %}
 
-          {# Dates #}
-          <p style="margin:0;color:#555;">
-            {{ e.dateDebut ? e.dateDebut|date('d/m/Y H:i') : 'Date à venir' }}
-            {% if e.dateFin %} → {{ e.dateFin|date('d/m/Y H:i') }}{% endif %}
-          </p>
+        <article style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.1);background:white;">
+          {% if e.image %}
+            <img src="{{ asset(e.image) }}" alt="Image de {{ e.titre }}" style="width:100%;height:180px;object-fit:cover;">
+          {% else %}
+            <img src="{{ asset('img/default.jpg') }}" alt="Image par défaut" style="width:100%;height:180px;object-fit:cover;">
+          {% endif %}
 
-          {# Lieu #}
-          {% set l = e.lieu ?? null %}
-          {% if l %}
-            <p style="margin:4px 0;color:#444;">
-              📍 {{ l.nom ?? '' }}{% if l.ville %}, {{ l.ville }}{% endif %}{% if l.pays %} • {{ l.pays }}{% endif %}
+          <div style="padding:12px;">
+            <h2 style="margin:4px 0 6px;font-size:1.2rem;">{{ e.titre ?? ('Événement #' ~ e.id) }}</h2>
+
+            <p style="margin:0;color:#555;">
+              {{ e.dateDebut ? e.dateDebut|date('d/m/Y H:i') : 'Date à venir' }}
+              {% if e.dateFin %} → {{ e.dateFin|date('d/m/Y H:i') }}{% endif %}
             </p>
-          {% endif %}
 
-          {# Catégorie #}
-          {% if e.categorie %}
-            <p style="margin:4px 0;color:#444;">🏷️ {{ e.categorie.nom ?? e.categorie }}</p>
-          {% endif %}
+            {% if e.lieu %}
+              <p style="margin:4px 0;color:#444;">
+                📍
+                {% if e.lieu.rue is defined and e.lieu.rue %}{{ e.lieu.rue }}, {% endif %}
+                {% if e.lieu.code_postal is defined and e.lieu.code_postal %}{{ e.lieu.code_postal }} {% endif %}
+                {% if e.lieu.ville is defined and e.lieu.ville %}{{ e.lieu.ville }}{% endif %}
+                {% if e.lieu.pays is defined and e.lieu.pays %} • {{ e.lieu.pays }}{% endif %}
+              </p>
+            {% endif %}
 
-          {# Description #}
-          {% if e.description %}
-            <p style="margin-top:6px;">
-              {{ e.description|u.truncate(180, '…', false) }}
-            </p>
-          {% endif %}
+            {% if e.categorie %}
+              <p style="margin:4px 0;color:#666;">🏷️ {{ e.categorie.nom ?? e.categorie }}</p>
+            {% endif %}
 
-          {# Capacités et inscriptions #}
-          {% set nbInsc = e.inscriptions is defined ? e.inscriptions|length : 0 %}
-          {% if e.capaciteMax is defined %}
+            {% if e.description %}
+              <p style="margin-top:6px;color:#333;">{{ e.description|u.truncate(120, '…', false) }}</p>
+            {% endif %}
+
             <p style="margin:6px 0;color:#333;">
-              {{ nbInsc }}/{{ e.capaciteMax }} inscrits
-              {% set rest = e.capaciteMax - nbInsc %}
-              {% if rest <= 0 %}<strong> • Complet</strong>{% endif %}
+              {% if e.capaciteMax is defined %}
+                {{ nbInsc }}/{{ e.capaciteMax }} inscrits
+              {% else %}
+                {{ nbInsc }} inscrit(s)
+              {% endif %}
             </p>
-          {% elseif e.inscriptions is defined %}
-            <p style="margin:6px 0;color:#333;">{{ nbInsc }} inscrit(s)</p>
-          {% endif %}
 
-          {# Bouton détail si une route existe (# à remplacer) #}
-          {# <a href="{{ path('evenement_show', {id: e.id}) }}" class="btn">Détails</a> #}
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <a href="{{ path('evenement_show', {id: e.id}) }}"
+                 style="flex:1;text-align:center;padding:8px 12px;border:1px solid #0ea5e9;border-radius:8px;text-decoration:none;color:#075985;">
+                Détails
+              </a>
+
+              {% if app.user %}
+                {% if isRegistered %}
+                  <form method="post" action="{{ path('evenement_unregister', {id: e.id}) }}" style="flex:1;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('desinscrire_' ~ e.id) }}">
+                    <button type="submit"
+                            style="width:100%;padding:8px 12px;border:1px solid #dc2626;border-radius:8px;background:#dc2626;color:white;cursor:pointer;">
+                      Se désinscrire
+                    </button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{{ path('evenement_register', {id: e.id}) }}" style="flex:1;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('inscrire_' ~ e.id) }}">
+                    <button type="submit"
+                            style="width:100%;padding:8px 12px;border:1px solid #16a34a;border-radius:8px;background:#16a34a;color:white;cursor:pointer;">
+                      S’inscrire
+                    </button>
+                  </form>
+                {% endif %}
+              {% else %}
+                <a href="{{ path('default_login') }}"
+                   style="flex:1;text-align:center;padding:8px 12px;border:1px solid #0ea5e9;border-radius:8px;text-decoration:none;color:#075985;">
+                  Se connecter
+                </a>
+              {% endif %}
+            </div>
+          </div>
         </article>
       {% endfor %}
     </div>
   {% endif %}
+{% endblock %}
+
+
+{% block stylesheets %}
+
 {% endblock %}

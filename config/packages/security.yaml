@@ -37,4 +37,6 @@ security:
     - { path: ^/login$, roles: PUBLIC_ACCESS }
     - { path: ^/inscription, roles: PUBLIC_ACCESS }
     - { path: ^/$, roles: PUBLIC_ACCESS }
+    - { path: ^/evenement/\d+$, roles: PUBLIC_ACCESS }        # page détails publique
+    - { path: ^/evenement/\d+/inscription$, roles: ROLE_USER } # inscription réservée aux connectés
     - { path: ^/, roles: ROLE_USER }
