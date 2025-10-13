@@ -1,0 +1,168 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mon Profil{% endblock %}
+
+{% block body %}
+<div style="max-width:1200px;margin:0 auto;padding:20px;">
+  
+  {% for msg in app.flashes('success') %}
+    <div style="padding:8px;border:1px solid #16a34a;color:#14532d;border-radius:8px;margin-bottom:10px;">{{ msg }}</div>
+  {% endfor %}
+  {% for msg in app.flashes('error') %}
+    <div style="padding:8px;border:1px solid #dc2626;color:#7f1d1d;border-radius:8px;margin-bottom:10px;">{{ msg }}</div>
+  {% endfor %}
+
+  <h1 style="margin-bottom:30px;">👤 Mon Profil</h1>
+
+  <div style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:30px;box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+    <h2 style="margin-top:0;margin-bottom:20px;color:#111827;border-bottom:2px solid #0ea5e9;padding-bottom:10px;">
+      📋 Informations personnelles
+    </h2>
+    
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:20px;">
+      <div>
+        <p style="margin:0;color:#6b7280;font-size:0.9rem;">Nom</p>
+        <p style="margin:5px 0 0 0;font-size:1.1rem;font-weight:500;">{{ user.nom ?: '—' }}</p>
+      </div>
+      
+      <div>
+        <p style="margin:0;color:#6b7280;font-size:0.9rem;">Prénom</p>
+        <p style="margin:5px 0 0 0;font-size:1.1rem;font-weight:500;">{{ user.prenom ?: '—' }}</p>
+      </div>
+      
+      <div>
+        <p style="margin:0;color:#6b7280;font-size:0.9rem;">Email</p>
+        <p style="margin:5px 0 0 0;font-size:1.1rem;font-weight:500;">{{ user.email }}</p>
+      </div>
+      
+      <div>
+        <p style="margin:0;color:#6b7280;font-size:0.9rem;">Rôle</p>
+        <p style="margin:5px 0 0 0;font-size:1.1rem;font-weight:500;">
+          {% if 'ROLE_ADMIN' in user.roles %}
+            <span style="padding:4px 10px;background:#16a34a;color:white;border-radius:6px;font-size:0.9rem;">Administrateur</span>
+          {% else %}
+            <span style="padding:4px 10px;background:#0ea5e9;color:white;border-radius:6px;font-size:0.9rem;">Utilisateur</span>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:30px;box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+    <h2 style="margin-top:0;margin-bottom:20px;color:#111827;border-bottom:2px solid #0ea5e9;padding-bottom:10px;">
+      🎟️ Mes inscriptions ({{ mesInscriptions|length }})
+    </h2>
+    
+    {% if mesInscriptions is empty %}
+      <p style="color:#6b7280;text-align:center;padding:20px;">
+        Vous n'êtes inscrit à aucun événement pour le moment.
+      </p>
+      <div style="text-align:center;">
+        <a href="{{ path('default_home') }}"
+           style="display:inline-block;padding:10px 20px;border:1px solid #0ea5e9;border-radius:8px;background:#0ea5e9;color:white;text-decoration:none;font-weight:500;">
+          Découvrir les événements
+        </a>
+      </div>
+    {% else %}
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+        {% for inscription in mesInscriptions %}
+          {% set e = inscription.evenement %}
+          <article style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#f9fafb;">
+            {% if e.image %}
+              <img src="{{ asset(e.image) }}" alt="Image de {{ e.titre }}" style="width:100%;height:140px;object-fit:cover;">
+            {% else %}
+              <img src="{{ asset('img/default.jpg') }}" alt="Image par défaut" style="width:100%;height:140px;object-fit:cover;">
+            {% endif %}
+            
+            <div style="padding:12px;">
+              <h3 style="margin:0 0 8px 0;font-size:1rem;">{{ e.titre }}</h3>
+              
+              <p style="margin:0 0 6px 0;color:#555;font-size:0.9rem;">
+                📅 {{ e.dateDebut ? e.dateDebut|date('d/m/Y H:i') : 'Date à venir' }}
+              </p>
+              
+              {% if e.lieu %}
+                <p style="margin:0 0 6px 0;color:#555;font-size:0.9rem;">
+                  📍 {{ e.lieu.ville ?: '' }}{% if e.lieu.pays %}, {{ e.lieu.pays }}{% endif %}
+                </p>
+              {% endif %}
+              
+              <p style="margin:0 0 10px 0;color:#6b7280;font-size:0.85rem;">
+                Inscrit le {{ inscription.dateInscription ? inscription.dateInscription|date('d/m/Y') : '—' }}
+              </p>
+              
+              <div style="display:flex;gap:8px;">
+                <a href="{{ path('evenement_show', {id: e.id}) }}"
+                   style="flex:1;text-align:center;padding:6px 10px;border:1px solid #0ea5e9;border-radius:6px;text-decoration:none;color:#075985;font-size:0.9rem;">
+                  Voir détails
+                </a>
+                
+                <form method="post" action="{{ path('evenement_unregister', {id: e.id}) }}" style="flex:1;">
+                  <input type="hidden" name="_token" value="{{ csrf_token('desinscrire_' ~ e.id) }}">
+                  <button type="submit"
+                          style="width:100%;padding:6px 10px;border:1px solid #dc2626;border-radius:6px;background:#dc2626;color:white;cursor:pointer;font-size:0.9rem;">
+                    Se désinscrire
+                  </button>
+                </form>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  {% if mesEvenementsCrees is not empty %}
+    <div style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:24px;box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+      <h2 style="margin-top:0;margin-bottom:20px;color:#111827;border-bottom:2px solid #16a34a;padding-bottom:10px;">
+        ✨ Événements que j'ai créés ({{ mesEvenementsCrees|length }})
+      </h2>
+      
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+        {% for e in mesEvenementsCrees %}
+          <article style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#f9fafb;">
+            {% if e.image %}
+              <img src="{{ asset(e.image) }}" alt="Image de {{ e.titre }}" style="width:100%;height:140px;object-fit:cover;">
+            {% else %}
+              <img src="{{ asset('img/default.jpg') }}" alt="Image par défaut" style="width:100%;height:140px;object-fit:cover;">
+            {% endif %}
+            
+            <div style="padding:12px;">
+              <h3 style="margin:0 0 8px 0;font-size:1rem;">{{ e.titre }}</h3>
+              
+              <p style="margin:0 0 6px 0;color:#555;font-size:0.9rem;">
+                📅 {{ e.dateDebut ? e.dateDebut|date('d/m/Y H:i') : 'Date à venir' }}
+              </p>
+              
+              <p style="margin:0 0 10px 0;color:#6b7280;font-size:0.85rem;">
+                👥 {{ e.inscriptions|length }} inscrit(s)
+                {% if e.capaciteMax %} / {{ e.capaciteMax }}{% endif %}
+              </p>
+              
+              <div style="display:flex;gap:8px;">
+                <a href="{{ path('evenement_show', {id: e.id}) }}"
+                   style="flex:1;text-align:center;padding:6px 10px;border:1px solid #0ea5e9;border-radius:6px;text-decoration:none;color:#075985;font-size:0.9rem;">
+                  Voir détails
+                </a>
+                
+                {% if 'ROLE_ADMIN' in user.roles %}
+                  <a href="{{ path('admin_evenement_edit', {id: e.id}) }}"
+                     style="flex:1;text-align:center;padding:6px 10px;border:1px solid #16a34a;border-radius:6px;background:#16a34a;color:white;text-decoration:none;font-size:0.9rem;">
+                    Modifier
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <div style="margin-top:30px;">
+    <a href="{{ path('default_home') }}"
+       style="display:inline-block;padding:10px 16px;border:1px solid #9ca3af;border-radius:8px;background:#f3f4f6;color:#374151;text-decoration:none;">
+      ← Retour à l'accueil
+    </a>
+  </div>
+</div>
+{% endblock %}
