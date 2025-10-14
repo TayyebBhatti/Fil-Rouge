@@ -99,7 +99,6 @@
             </div>
             <p class="muted" style="margin-top:6px">Suggestion automatique si tu as activé les <code>datalist</code> dans ton formulaire.</p>
 
-            {# Placeholders pour listes si ton FormType ajoute attr { list: 'dl-*' } #}
             <datalist id="dl-rue">
               {% for v in rues %}<option value="{{ v }}">{% endfor %}
             </datalist>

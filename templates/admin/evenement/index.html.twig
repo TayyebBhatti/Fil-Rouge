@@ -17,6 +17,32 @@
   .edit{border-color:var(--primary);color:#075985}
   .delete{background:var(--danger);border-color:var(--danger);color:#fff}
   .delete:hover{background:#b91c1c}
+
+  @media (max-width: 640px) {
+  .wrap { padding: 0 10px; }
+
+  .table { border-radius: 0; border-left: 0; border-right: 0; overflow-x: auto; }
+  .table::-webkit-scrollbar { height: 6px; }
+
+  table { table-layout: fixed; min-width: 520px; }
+  th, td { padding: 8px; }
+
+  th:nth-child(1),
+  td:nth-child(1) { display: none; }
+
+  td:last-child {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  td:last-child .action {
+    flex: 1 1 120px;
+    text-align: center;
+  }
+
+  .btn { width: 100%; text-align: center; }
+}
+
 </style>
 {% endblock %}
 

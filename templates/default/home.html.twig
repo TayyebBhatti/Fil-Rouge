@@ -64,7 +64,6 @@
 		margin: 0
 	}
 
-	/* Buttons */
 	.btn {
 		display: inline-block;
 		padding: 10px 16px;
@@ -107,7 +106,6 @@
 		background: var(--danger-hover)
 	}
 
-	/* Filter box */
 	.filter {
 		background: #f9fafb;
 		border: 1px solid var(--border);
@@ -159,7 +157,6 @@
 		font-style: italic
 	}
 
-	/* Cards */
 	.cards {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -217,7 +214,6 @@
 <div
 	class="wrap">
 
-	{# Alerts #}
 	{% for msg in app.flashes('success') %}
 		<div class="alert alert-success">{{ msg }}</div>
 	{% endfor %}
@@ -225,7 +221,6 @@
 		<div class="alert alert-error">{{ msg }}</div>
 	{% endfor %}
 
-	{# Header #}
 	<div class="head">
 		<h1>Événements</h1>
 		{% if app.user and 'ROLE_ADMIN' in app.user.roles %}
@@ -233,7 +228,6 @@
 		{% endif %}
 	</div>
 
-	{# Filter #}
 	<div class="filter">
 		<form method="get" action="{{ path('default_home') }}">
 			<div class="grid">
@@ -277,7 +271,6 @@
 			résultat(s) trouvé(s)</p>
 	{% endif %}
 
-	{# Empty state #}
 	{% if evenements is empty %}
 		<div class="card" style="text-align:center;">
 			<div class="card-body">
