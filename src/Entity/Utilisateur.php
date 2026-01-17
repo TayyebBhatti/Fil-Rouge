@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
@@ -18,12 +19,17 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
     private ?string $nom = null;
 
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
     private ?string $prenom = null;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
+    #[Assert\NotBlank(message: "L'email est obligatoire.")]
+    #[Assert\Email(message: "Email invalide.")]
+    #[Assert\Length(max: 180)]
     private string $email = '';
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]

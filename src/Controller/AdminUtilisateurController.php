@@ -6,7 +6,8 @@ namespace App\Controller;
 
 use App\Entity\Utilisateur;
 use App\Repository\UtilisateurRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\AdminUtilisateurService;
+use App\Exception\DomainException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,7 +30,7 @@ final class AdminUtilisateurController extends AbstractController
     }
 
     #[Route('/{id}/promote', name: 'admin_utilisateur_promote', methods: ['POST'])]
-    public function promote(Request $request, Utilisateur $utilisateur, EntityManagerInterface $entityManager): RedirectResponse
+    public function promote(Request $request, Utilisateur $utilisateur, AdminUtilisateurService $adminService): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('promote_user_' . $utilisateur->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Le jeton de sécurité a expiré, veuillez réessayer.');
@@ -37,29 +38,24 @@ final class AdminUtilisateurController extends AbstractController
             return $this->redirectToRoute('admin_utilisateur_index');
         }
 
-        if ($utilisateur === $this->getUser()) {
-            $this->addFlash('error', "Vous ne pouvez pas modifier vos propres privilèges d'administrateur.");
-
-            return $this->redirectToRoute('admin_utilisateur_index');
+        /** @var Utilisateur|null $acteur */
+        $acteur = $this->getUser();
+        if (!$acteur instanceof Utilisateur) {
+            return $this->redirectToRoute('default_login');
         }
 
-        $roles = $this->normalizeRoles($utilisateur->getRoles());
-
-        if (!\in_array('ROLE_ADMIN', $roles, true)) {
-            $roles[] = 'ROLE_ADMIN';
-            $utilisateur->setRoles($this->normalizeRoles($roles));
-            $entityManager->flush();
-
-            $this->addFlash('success', sprintf('Le compte %s est désormais administrateur.', $this->displayEmail($utilisateur)));
-        } else {
-            $this->addFlash('info', sprintf('Le compte %s est déjà administrateur.', $this->displayEmail($utilisateur)));
+        try {
+            $message = $adminService->promote($acteur, $utilisateur);
+            $this->addFlash(str_contains($message, 'déjà') ? 'info' : 'success', $message);
+        } catch (DomainException $e) {
+            $this->addFlash('error', $e->getMessage());
         }
 
         return $this->redirectToRoute('admin_utilisateur_index');
     }
 
     #[Route('/{id}/demote', name: 'admin_utilisateur_demote', methods: ['POST'])]
-    public function demote(Request $request, Utilisateur $utilisateur, EntityManagerInterface $entityManager): RedirectResponse
+    public function demote(Request $request, Utilisateur $utilisateur, AdminUtilisateurService $adminService): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('demote_user_' . $utilisateur->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Le jeton de sécurité a expiré, veuillez réessayer.');
@@ -67,23 +63,24 @@ final class AdminUtilisateurController extends AbstractController
             return $this->redirectToRoute('admin_utilisateur_index');
         }
 
-        if ($utilisateur === $this->getUser()) {
-            $this->addFlash('error', 'Vous ne pouvez pas retirer vos propres droits administrateur.');
-
-            return $this->redirectToRoute('admin_utilisateur_index');
+        /** @var Utilisateur|null $acteur */
+        $acteur = $this->getUser();
+        if (!$acteur instanceof Utilisateur) {
+            return $this->redirectToRoute('default_login');
         }
 
-        $roles = \array_values(\array_diff($this->normalizeRoles($utilisateur->getRoles()), ['ROLE_ADMIN']));
-        $utilisateur->setRoles($this->normalizeRoles($roles));
-        $entityManager->flush();
-
-        $this->addFlash('success', sprintf('Le compte %s est maintenant simple utilisateur.', $this->displayEmail($utilisateur)));
+        try {
+            $message = $adminService->demote($acteur, $utilisateur);
+            $this->addFlash('success', $message);
+        } catch (DomainException $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
 
         return $this->redirectToRoute('admin_utilisateur_index');
     }
 
     #[Route('/{id}/ban', name: 'admin_utilisateur_ban', methods: ['POST'])]
-    public function ban(Request $request, Utilisateur $utilisateur, EntityManagerInterface $entityManager): RedirectResponse
+    public function ban(Request $request, Utilisateur $utilisateur, AdminUtilisateurService $adminService): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('ban_user_' . $utilisateur->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Le jeton de sécurité a expiré, veuillez réessayer.');
@@ -91,30 +88,24 @@ final class AdminUtilisateurController extends AbstractController
             return $this->redirectToRoute('admin_utilisateur_index');
         }
 
-        if ($utilisateur === $this->getUser()) {
-            $this->addFlash('error', 'Vous ne pouvez pas bannir votre propre compte.');
-
-            return $this->redirectToRoute('admin_utilisateur_index');
+        /** @var Utilisateur|null $acteur */
+        $acteur = $this->getUser();
+        if (!$acteur instanceof Utilisateur) {
+            return $this->redirectToRoute('default_login');
         }
 
-        $roles = $this->normalizeRoles($utilisateur->getRoles());
-
-        if (!\in_array('ROLE_BANNED', $roles, true)) {
-            $roles = \array_values(\array_diff($roles, ['ROLE_ADMIN']));
-            $roles[] = 'ROLE_BANNED';
-            $utilisateur->setRoles($this->normalizeRoles($roles));
-            $entityManager->flush();
-
-            $this->addFlash('success', sprintf('Le compte %s a été banni.', $this->displayEmail($utilisateur)));
-        } else {
-            $this->addFlash('info', sprintf('Le compte %s est déjà banni.', $this->displayEmail($utilisateur)));
+        try {
+            $message = $adminService->ban($acteur, $utilisateur);
+            $this->addFlash(str_contains($message, 'déjà') ? 'info' : 'success', $message);
+        } catch (DomainException $e) {
+            $this->addFlash('error', $e->getMessage());
         }
 
         return $this->redirectToRoute('admin_utilisateur_index');
     }
 
     #[Route('/{id}/unban', name: 'admin_utilisateur_unban', methods: ['POST'])]
-    public function unban(Request $request, Utilisateur $utilisateur, EntityManagerInterface $entityManager): RedirectResponse
+    public function unban(Request $request, Utilisateur $utilisateur, AdminUtilisateurService $adminService): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('unban_user_' . $utilisateur->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Le jeton de sécurité a expiré, veuillez réessayer.');
@@ -122,33 +113,11 @@ final class AdminUtilisateurController extends AbstractController
             return $this->redirectToRoute('admin_utilisateur_index');
         }
 
-        $roles = \array_values(\array_diff($this->normalizeRoles($utilisateur->getRoles()), ['ROLE_BANNED']));
-        $utilisateur->setRoles($this->normalizeRoles($roles));
-        $entityManager->flush();
-
-        $this->addFlash('success', sprintf('Le compte %s a été rétabli.', $this->displayEmail($utilisateur)));
+        $message = $adminService->unban($utilisateur);
+        $this->addFlash('success', $message);
 
         return $this->redirectToRoute('admin_utilisateur_index');
     }
 
     
-    private function displayEmail(Utilisateur $utilisateur): string
-    {
-        $email = trim($utilisateur->getEmail());
-        return $email !== '' ? $email : 'inconnu';
-    }
-
-    /**
-     * Supprime les doublons et le rôle implicite ROLE_USER avant persistance.
-     *
-     * @param array<int, string> $roles
-     *
-     * @return array<int, string>
-     */
-    private function normalizeRoles(array $roles): array
-    {
-        $roles = \array_values(\array_unique($roles));
-
-        return \array_values(\array_filter($roles, static fn (string $role): bool => $role !== 'ROLE_USER'));
-    }
 }

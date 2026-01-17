@@ -10,6 +10,8 @@ use App\Entity\Lieu;
 use App\Form\EvenementType;
 use App\Repository\EvenementRepository;
 use App\Repository\LieuRepository;
+use App\Exception\DomainException;
+use App\Service\LieuService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,7 +32,7 @@ final class AdminEvenementController extends AbstractController
     }
 
     #[Route('/new', name: 'admin_evenement_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em, LieuRepository $lieux): Response
+    public function new(Request $request, EntityManagerInterface $em, LieuRepository $lieux, LieuService $lieuService): Response
     {
         $evenement = new Evenement();
 
@@ -44,9 +46,27 @@ final class AdminEvenementController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->normalizeAndDeduplicateLieu($evenement, $lieux, $em);
-            $em->persist($evenement);
-            $em->flush();
+            try {
+                $lieu = $evenement->getLieu();
+                if ($lieu instanceof Lieu) {
+                    $evenement->setLieu($lieuService->normalizeAndDeduplicate($lieu));
+                }
+
+                $em->persist($evenement);
+                $em->flush();
+            } catch (DomainException $e) {
+                $this->addFlash('danger', $e->getMessage());
+
+                [$rues, $codes, $villes, $pays] = $this->distinctLieuValues($lieux);
+
+                return $this->render('admin/evenement/new.html.twig', [
+                    'form'   => $form->createView(),
+                    'rues'   => $rues,
+                    'codes'  => $codes,
+                    'villes' => $villes,
+                    'pays'   => $pays,
+                ]);
+            }
 
             $this->addFlash('success', 'Événement créé.');
             return $this->redirectToRoute('admin_evenement_index');
@@ -64,14 +84,32 @@ final class AdminEvenementController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'admin_evenement_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Evenement $evenement, EntityManagerInterface $em, LieuRepository $lieux): Response
+    public function edit(Request $request, Evenement $evenement, EntityManagerInterface $em, LieuRepository $lieux, LieuService $lieuService): Response
     {
         $form = $this->createForm(EvenementType::class, $evenement);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->normalizeAndDeduplicateLieu($evenement, $lieux, $em);
-            $em->flush();
+            try {
+                $lieu = $evenement->getLieu();
+                if ($lieu instanceof Lieu) {
+                    $evenement->setLieu($lieuService->normalizeAndDeduplicate($lieu));
+                }
+                $em->flush();
+            } catch (DomainException $e) {
+                $this->addFlash('danger', $e->getMessage());
+
+                [$rues, $codes, $villes, $pays] = $this->distinctLieuValues($lieux);
+
+                return $this->render('admin/evenement/edit.html.twig', [
+                    'evenement' => $evenement,
+                    'form'      => $form->createView(),
+                    'rues'      => $rues,
+                    'codes'     => $codes,
+                    'villes'    => $villes,
+                    'pays'      => $pays,
+                ]);
+            }
 
             $this->addFlash('success', 'Événement modifié.');
             return $this->redirectToRoute('admin_evenement_index');
@@ -98,43 +136,6 @@ final class AdminEvenementController extends AbstractController
             $this->addFlash('success', 'Événement supprimé.');
         }
         return $this->redirectToRoute('admin_evenement_index');
-    }
-
-    private function normalizeAndDeduplicateLieu(Evenement $evenement, LieuRepository $lieux, EntityManagerInterface $em): void
-    {
-        $lieu = $evenement->getLieu();
-        if (!$lieu instanceof Lieu) {
-            return;
-        }
-
-        $rue   = trim((string) ($lieu->getRue() ?? ''));
-        $code  = trim((string) ($lieu->getCodePostal() ?? ''));   // <-- camelCase
-        $ville = trim((string) ($lieu->getVille() ?? ''));
-        $pays  = trim((string) ($lieu->getPays() ?? ''));
-
-        $tousVides = ($rue === '' && $code === '' && $ville === '' && $pays === '');
-        if ($tousVides) {
-            $evenement->setLieu(null);
-            return;
-        }
-
-        $existant = $lieux->findOneBy([
-            'rue'        => $rue === '' ? null : $rue,
-            'codePostal' => $code === '' ? null : $code,
-            'ville'      => $ville === '' ? null : $ville,
-            'pays'       => $pays === '' ? null : $pays,
-        ]);
-
-        if ($existant) {
-            $evenement->setLieu($existant);
-            return;
-        }
-
-        $lieu->setRue($rue === '' ? null : $rue);
-        $lieu->setCodePostal($code === '' ? null : $code);   
-        $lieu->setVille($ville === '' ? null : $ville);
-        $lieu->setPays($pays === '' ? null : $pays);
-        $em->persist($lieu);
     }
 
     /** @return array{0: string[], 1: string[], 2: string[], 3: string[]} */

@@ -23,8 +23,8 @@ final class EvenementType extends AbstractType
             ->add('titre', TextType::class, ['label' => 'Titre'])
             ->add('description', TextareaType::class, ['label' => 'Description', 'required' => false])
             ->add('dateDebut', DateTimeType::class, ['widget' => 'single_text', 'label' => 'Date de début'])
-            ->add('dateFin', DateTimeType::class, ['widget' => 'single_text', 'label' => 'Date de fin', 'required' => false])
-            ->add('capaciteMax', IntegerType::class, ['label' => 'Capacité max', 'required' => false])
+            ->add('dateFin', DateTimeType::class, ['widget' => 'single_text', 'label' => 'Date de fin'])
+            ->add('capaciteMax', IntegerType::class, ['label' => 'Capacité max'])
             ->add('categorie', EntityType::class, [
                 'class' => Categorie::class,
                 'choice_label' => 'nom',
@@ -33,7 +33,7 @@ final class EvenementType extends AbstractType
             ])
             ->add('lieu', LieuType::class, [
                 'label' => 'Lieu',
-                'required' => false,
+                'required' => true,
             ])
             ->add('image', TextType::class, [
                 'label' => 'Chemin image (ex: img/1.jpg)',

@@ -17,22 +17,22 @@ final class LieuType extends AbstractType
         $builder
             ->add('rue', TextType::class, [
                 'label' => 'Rue',
-                'required' => false,
+                'required' => true,
                 'attr' => ['list' => 'dl-rue', 'placeholder' => '12 avenue de la Paix'],
             ])
             ->add('codePostal', TextType::class, [
                 'label' => 'Code postal',
-                'required' => false,
+                'required' => true,
                 'attr' => ['list' => 'dl-code', 'placeholder' => '75001'],
             ])
             ->add('ville', TextType::class, [
                 'label' => 'Ville',
-                'required' => false,
+                'required' => true,
                 'attr' => ['list' => 'dl-ville', 'placeholder' => 'Paris'],
             ])
             ->add('pays', TextType::class, [
                 'label' => 'Pays',
-                'required' => false,
+                'required' => true,
                 'attr' => ['list' => 'dl-pays', 'placeholder' => 'France'],
             ]);
     }
