@@ -1,25 +1,53 @@
-
-###> symfony/framework-bundle ###
-/.env
-/.env.local
-/.env.local.php
-/.env.*.local
-/config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
+### Symfony ###
 /var/
 /vendor/
-###< symfony/framework-bundle ###
+/public/bundles/
+/.env
+.env.local
+.env.*.local
 
-###> phpunit/phpunit ###
+### PHPUnit / Tests ###
+.phpunit.cache
+.phpunit.result.cache
 /phpunit.xml
-/.phpunit.cache/
-###< phpunit/phpunit ###
+/phpunit.xml.dist
+/var/test.db
 
-###> symfony/asset-mapper ###
-/public/assets/
-/assets/vendor/
-###< symfony/asset-mapper ###
+### Doctrine ###
+/migrations_backup/
 
-.env*
+### IDE / OS ###
+.idea/
+.vscode/
+*.swp
+*.swo
 .DS_Store
-composer.phar
+Thumbs.db
+
+### Logs ###
+*.log
+
+### Cache ###
+.cache/
+tmp/
+
+### Node / Front ###
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+### Build / Assets ###
+/public/build/
+/public/assets/
+
+### CI / Secrets ###
+*.key
+*.pem
+*.crt
+
+### Docker  ###
+docker-compose.override.yml
+
+### Misc ###
+coverage/
