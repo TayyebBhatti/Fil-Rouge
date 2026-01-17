@@ -3,8 +3,13 @@
 /vendor/
 /public/bundles/
 /.env
+.env
 .env.local
 .env.*.local
+.env.dev
+.env.test
+.env.prod
+
 
 ### PHPUnit / Tests ###
 .phpunit.cache
