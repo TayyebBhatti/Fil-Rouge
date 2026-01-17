@@ -58,6 +58,7 @@
       <input type="hidden" name="_csrf_token" value="{{ csrf_token('register') }}"/>
 
       <div class="grid">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token('register') }}">
         <div>
           <label for="nom">Nom</label>
           <input id="nom" name="nom" type="text" value="{{ old.nom|default('') }}" required>
