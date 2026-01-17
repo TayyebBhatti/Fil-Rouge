@@ -14,9 +14,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 final class DefaultController extends AbstractController
 {
-    /**
-     * Page d'accueil publique.
-     */
     #[Route('/', name: 'default_home', methods: ['GET'])]
     public function index(
         Request $request,

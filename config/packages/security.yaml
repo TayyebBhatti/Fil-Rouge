@@ -1,43 +1,46 @@
 security:
-  password_hashers:
-    App\Entity\Utilisateur: 'auto'
+    password_hashers:
+        App\Entity\Utilisateur: "auto"
 
-  providers:
-    app_user_provider:
-      entity:
-        class: App\Entity\Utilisateur
-        property: email
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\Utilisateur
+                property: email
 
-  firewalls:
-    dev:
-      pattern: ^/(_(profiler|wdt)|css|images|js)/
-      security: false
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
 
-    main:
-      provider: app_user_provider
-      lazy: true
-      user_checker: App\Security\UtilisateurChecker
-      form_login:
-        login_path: default_login
-        check_path: default_login
-        enable_csrf: true
-        csrf_parameter: _csrf_token
-        csrf_token_id: authenticate
-        default_target_path: default_home
-        always_use_default_target_path: true
-      logout:
-        path: app_logout
-        target: default_home
-      remember_me:
-        secret: '%env(APP_SECRET)%'
-        lifetime: 1209600
-        path: /
+        main:
+            provider: app_user_provider
+            lazy: true
+            user_checker: App\Security\UtilisateurChecker
+            form_login:
+                login_path: default_login
+                check_path: default_login
+                enable_csrf: true
+                csrf_parameter: _csrf_token
+                csrf_token_id: authenticate
+                default_target_path: default_home
+                always_use_default_target_path: true
+            logout:
+                path: app_logout
+                target: default_home
+            remember_me:
+                secret: "%env(APP_SECRET)%"
+                lifetime: 1209600
+                path: /
+            login_throttling:
+                max_attempts: 5
+                interval: "1 minute"
 
-  access_control:
-    - { path: ^/(_(profiler|wdt)|css|images|js), roles: PUBLIC_ACCESS }
-    - { path: ^/login$, roles: PUBLIC_ACCESS }
-    - { path: ^/inscription, roles: PUBLIC_ACCESS }
-    - { path: ^/$, roles: PUBLIC_ACCESS }
-    - { path: ^/evenement/\d+$, roles: PUBLIC_ACCESS }        # page détails publique
-    - { path: ^/evenement/\d+/inscription$, roles: ROLE_USER } # inscription réservée aux connectés
-    - { path: ^/, roles: ROLE_USER }
+    access_control:
+        - { path: ^/(_(profiler|wdt)|css|images|js), roles: PUBLIC_ACCESS }
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/inscription, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        - { path: ^/evenement/\d+$, roles: PUBLIC_ACCESS } # page détails publique
+        - { path: ^/evenement/\d+/inscription$, roles: ROLE_USER } # inscription réservée aux connectés
+        - { path: ^/, roles: ROLE_USER }

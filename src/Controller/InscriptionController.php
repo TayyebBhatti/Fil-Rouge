@@ -26,7 +26,10 @@ class InscriptionController extends AbstractController
         if ($request->isMethod('GET')) {
             return $this->render('security/inscription.html.twig');
         }
-
+        if (!$this->isCsrfTokenValid('register', (string) $request->request->get('_csrf_token'))) {
+            $this->addFlash('error', 'Jeton CSRF invalide.');
+            return $this->redirectToRoute('default_inscription');
+        }
         $email   = trim((string) $request->request->get('email', ''));
         $prenom  = trim((string) $request->request->get('prenom', ''));
         $nom     = trim((string) $request->request->get('nom', ''));
@@ -55,6 +58,6 @@ class InscriptionController extends AbstractController
         $this->em->flush();
 
         $this->addFlash('success', 'Compte créé.');
-        return $this->redirectToRoute('default_login'); 
+        return $this->redirectToRoute('default_login');
     }
 }

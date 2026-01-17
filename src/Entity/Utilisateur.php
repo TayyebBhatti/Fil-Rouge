@@ -22,8 +22,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $prenom = null;
 
-    #[ORM\Column(type: 'string', length: 180, unique: true, nullable: true)]
-    private ?string $email = null;
+    #[ORM\Column(type: 'string', length: 180, unique: true)]
+    private string $email = '';
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $image = null;
@@ -31,8 +31,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
-    #[ORM\Column(name: 'mot_de_passe', type: 'string', length: 255, nullable: true)]
-    private ?string $password = null;
+    #[ORM\Column(name: 'mot_de_passe', type: 'string', length: 255)]
+    private string $password = '';
 
     /** @var Collection<int, Inscription> */
     #[ORM\OneToMany(targetEntity: Inscription::class, mappedBy: 'utilisateur', orphanRemoval: false)]
@@ -48,20 +48,44 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         $this->evenementsCrees = new ArrayCollection();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getNom(): ?string { return $this->nom; }
-    public function setNom(?string $nom): self { $this->nom = $nom; return $this; }
+    public function getNom(): ?string
+    {
+        return $this->nom;
+    }
+    public function setNom(?string $nom): self
+    {
+        $this->nom = $nom;
+        return $this;
+    }
 
-    public function getPrenom(): ?string { return $this->prenom; }
-    public function setPrenom(?string $prenom): self { $this->prenom = $prenom; return $this; }
+    public function getPrenom(): ?string
+    {
+        return $this->prenom;
+    }
+    public function setPrenom(?string $prenom): self
+    {
+        $this->prenom = $prenom;
+        return $this;
+    }
 
-    public function getEmail(): ?string { return $this->email; }
-    public function setEmail(?string $email): self { $this->email = $email; return $this; }
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
+        return $this;
+    }
 
     public function getUserIdentifier(): string
     {
-        return (string) ($this->email ?? '');
+        return $this->email;
     }
 
     /** @deprecated Symfony < 5.3 */
@@ -83,18 +107,18 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getPassword(): ?string
+    public function getPassword(): string
     {
         return $this->password;
     }
-
-    public function setPassword(?string $password): self
+    public function setPassword(string $password): self
     {
         $this->password = $password;
         return $this;
     }
 
-        public function getImage(): ?string
+
+    public function getImage(): ?string
     {
         return $this->image;
     }
@@ -105,13 +129,19 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function eraseCredentials(): void
-    {
-    }
+    public function eraseCredentials(): void {}
+
+
 
     /** @return Collection<int, Inscription> */
-    public function getInscriptions(): Collection { return $this->inscriptions; }
+    public function getInscriptions(): Collection
+    {
+        return $this->inscriptions;
+    }
 
     /** @return Collection<int, Evenement> */
-    public function getEvenementsCrees(): Collection { return $this->evenementsCrees; }
+    public function getEvenementsCrees(): Collection
+    {
+        return $this->evenementsCrees;
+    }
 }
