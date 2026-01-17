@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Evenement;
 use App\Entity\Inscription;
+use App\Entity\Utilisateur;
 use App\Repository\InscriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,18 +19,18 @@ final class EvenementController extends AbstractController
     #[Route('/evenement/{id}', name: 'evenement_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(Evenement $evenement, InscriptionRepository $inscriptions): Response
     {
-        $dejaInscrit = false;
-        if ($this->getUser()) {
+                $dejaInscrit = false;
+
+        /** @var Utilisateur|null $user */
+        $user = $this->getUser();
+        if ($user instanceof Utilisateur) {
             $dejaInscrit = (bool) $inscriptions->findOneBy([
-                'utilisateur' => $this->getUser(),
+                'utilisateur' => $user,
                 'evenement'   => $evenement,
             ]);
         }
 
-        $createur = null;
-        if (method_exists($evenement, 'getCreateur')) {
-            $createur = $evenement->getCreateur();
-        }
+        $createur = $evenement->getCreateur();
 
         return $this->render('evenement/show.html.twig', [
             'evenement'   => $evenement,
@@ -41,7 +42,9 @@ final class EvenementController extends AbstractController
     #[Route('/evenement/{id}/inscription', name: 'evenement_register', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function register(Evenement $evenement, Request $request, EntityManagerInterface $em, InscriptionRepository $inscriptions): Response
     {
-        if (!$this->getUser()) {
+                /** @var Utilisateur|null $user */
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur) {
             return $this->redirectToRoute('default_login');
         }
 
@@ -50,13 +53,13 @@ final class EvenementController extends AbstractController
             return $this->redirectToRoute('evenement_show', ['id' => $evenement->getId()]);
         }
 
-        $exists = $inscriptions->findOneBy(['utilisateur' => $this->getUser(), 'evenement' => $evenement]);
+        $exists = $inscriptions->findOneBy(['utilisateur' => $user, 'evenement' => $evenement]);
         if ($exists) {
             $this->addFlash('error', 'Déjà inscrit.');
             return $this->redirectToRoute('evenement_show', ['id' => $evenement->getId()]);
         }
 
-        if (method_exists($evenement, 'getCapaciteMax') && null !== $evenement->getCapaciteMax()
+        if (null !== $evenement->getCapaciteMax()
             && \count($evenement->getInscriptions()) >= $evenement->getCapaciteMax()) {
             $this->addFlash('error', 'Événement complet.');
             return $this->redirectToRoute('evenement_show', ['id' => $evenement->getId()]);
@@ -64,10 +67,8 @@ final class EvenementController extends AbstractController
 
         $insc = new Inscription();
         $insc->setEvenement($evenement);
-        $insc->setUtilisateur($this->getUser());
-        if (method_exists($insc, 'setDateInscription')) {
-            $insc->setDateInscription(new \DateTimeImmutable());
-        }
+        $insc->setUtilisateur($user);
+        $insc->setDateInscription(new \DateTimeImmutable());
 
         $em->persist($insc);
         $em->flush();
@@ -79,7 +80,9 @@ final class EvenementController extends AbstractController
     #[Route('/evenement/{id}/desinscription', name: 'evenement_unregister', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function unregister(Evenement $evenement, Request $request, EntityManagerInterface $em, InscriptionRepository $inscriptions): Response
     {
-        if (!$this->getUser()) {
+                /** @var Utilisateur|null $user */
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur) {
             return $this->redirectToRoute('default_login');
         }
 
@@ -88,7 +91,7 @@ final class EvenementController extends AbstractController
             return $this->redirectToRoute('evenement_show', ['id' => $evenement->getId()]);
         }
 
-        $insc = $inscriptions->findOneBy(['utilisateur' => $this->getUser(), 'evenement' => $evenement]);
+        $insc = $inscriptions->findOneBy(['utilisateur' => $user, 'evenement' => $evenement]);
         if (!$insc) {
             $this->addFlash('error', 'Aucune inscription trouvée.');
             return $this->redirectToRoute('evenement_show', ['id' => $evenement->getId()]);

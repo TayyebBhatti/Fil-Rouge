@@ -50,9 +50,9 @@ final class AdminUtilisateurController extends AbstractController
             $utilisateur->setRoles($this->normalizeRoles($roles));
             $entityManager->flush();
 
-            $this->addFlash('success', sprintf('Le compte %s est désormais administrateur.', $utilisateur->getEmail() ?? 'inconnu'));
+            $this->addFlash('success', sprintf('Le compte %s est désormais administrateur.', $this->displayEmail($utilisateur)));
         } else {
-            $this->addFlash('info', sprintf('Le compte %s est déjà administrateur.', $utilisateur->getEmail() ?? 'inconnu'));
+            $this->addFlash('info', sprintf('Le compte %s est déjà administrateur.', $this->displayEmail($utilisateur)));
         }
 
         return $this->redirectToRoute('admin_utilisateur_index');
@@ -77,7 +77,7 @@ final class AdminUtilisateurController extends AbstractController
         $utilisateur->setRoles($this->normalizeRoles($roles));
         $entityManager->flush();
 
-        $this->addFlash('success', sprintf('Le compte %s est maintenant simple utilisateur.', $utilisateur->getEmail() ?? 'inconnu'));
+        $this->addFlash('success', sprintf('Le compte %s est maintenant simple utilisateur.', $this->displayEmail($utilisateur)));
 
         return $this->redirectToRoute('admin_utilisateur_index');
     }
@@ -105,9 +105,9 @@ final class AdminUtilisateurController extends AbstractController
             $utilisateur->setRoles($this->normalizeRoles($roles));
             $entityManager->flush();
 
-            $this->addFlash('success', sprintf('Le compte %s a été banni.', $utilisateur->getEmail() ?? 'inconnu'));
+            $this->addFlash('success', sprintf('Le compte %s a été banni.', $this->displayEmail($utilisateur)));
         } else {
-            $this->addFlash('info', sprintf('Le compte %s est déjà banni.', $utilisateur->getEmail() ?? 'inconnu'));
+            $this->addFlash('info', sprintf('Le compte %s est déjà banni.', $this->displayEmail($utilisateur)));
         }
 
         return $this->redirectToRoute('admin_utilisateur_index');
@@ -126,9 +126,16 @@ final class AdminUtilisateurController extends AbstractController
         $utilisateur->setRoles($this->normalizeRoles($roles));
         $entityManager->flush();
 
-        $this->addFlash('success', sprintf('Le compte %s a été rétabli.', $utilisateur->getEmail() ?? 'inconnu'));
+        $this->addFlash('success', sprintf('Le compte %s a été rétabli.', $this->displayEmail($utilisateur)));
 
         return $this->redirectToRoute('admin_utilisateur_index');
+    }
+
+    
+    private function displayEmail(Utilisateur $utilisateur): string
+    {
+        $email = trim($utilisateur->getEmail());
+        return $email !== '' ? $email : 'inconnu';
     }
 
     /**

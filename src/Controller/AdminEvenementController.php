@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Evenement;
+use App\Entity\Utilisateur;
 use App\Entity\Lieu;
 use App\Form\EvenementType;
 use App\Repository\EvenementRepository;
@@ -32,8 +33,11 @@ final class AdminEvenementController extends AbstractController
     public function new(Request $request, EntityManagerInterface $em, LieuRepository $lieux): Response
     {
         $evenement = new Evenement();
-        if (method_exists($evenement, 'setCreateur') && $this->getUser()) {
-            $evenement->setCreateur($this->getUser());
+
+        /** @var Utilisateur|null $user */
+        $user = $this->getUser();
+        if ($user instanceof Utilisateur) {
+            $evenement->setCreateur($user);
         }
 
         $form = $this->createForm(EvenementType::class, $evenement);

@@ -39,7 +39,7 @@ class AppFixtures extends Fixture
             $lieu = new Lieu();
             $lieu->setRue($l['rue']);
             $lieu->setVille($l['ville']);
-            $lieu->setCodePostal($l['cp']);
+            $lieu->setCodePostal((string) $l['cp']);
             $lieu->setPays($l['pays']);
             $manager->persist($lieu);
             $lieux[] = $lieu;
@@ -65,28 +65,16 @@ class AppFixtures extends Fixture
         for ($i = 1; $i <= 8; $i++) {
             $e = new Evenement();
             $e->setTitre("Événement $i");
-            // si ton entité a un champ description
-            if (method_exists($e, 'setDescription')) {
-                $e->setDescription("Description de l’événement $i");
-            }
+            $e->setDescription("Description de l’événement $i");
             // si ton entité a des dates début/fin (DateTimeImmutable recommandé)
-            $start = new \DateTime("+$i day 10:00");
-            if (method_exists($e, 'setDateDebut')) {
-                $e->setDateDebut($start);
-            }
-            if (method_exists($e, 'setDateFin')) {
-                $e->setDateFin($start->modify('+2 hours'));
-            }
+            $start = new \DateTimeImmutable("+$i day 10:00");
+            $e->setDateDebut($start);
+            $e->setDateFin($start->modify('+2 hours'));
             // relations
-            if (method_exists($e, 'setCategorie')) {
-                $e->setCategorie($categories[array_rand($categories)]);
-            }
-            if (method_exists($e, 'setLieu')) {
-                $e->setLieu($lieux[array_rand($lieux)]);
-            }
-            if (method_exists($e, 'setCreateur')) {
-                $e->setCreateur($users[array_rand($users)]);
-            }
+            $e->setCategorie($categories[array_rand($categories)]);
+            $e->setLieu($lieux[array_rand($lieux)]);
+            $e->setCreateur($users[array_rand($users)]);
+            $e->setImage('default.jpg');
             $manager->persist($e);
             $events[] = $e;
         }
@@ -107,7 +95,7 @@ class AppFixtures extends Fixture
             $insc = new Inscription();
             $insc->setUtilisateur($user);
             $insc->setEvenement($event);
-            $insc->setDateInscription(new \DateTime());
+            $insc->setDateInscription(new \DateTimeImmutable());
             $manager->persist($insc);
 
             $count++;

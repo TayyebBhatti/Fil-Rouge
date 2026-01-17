@@ -13,6 +13,7 @@ class Lieu
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line */
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -50,7 +51,7 @@ class Lieu
         return $this->rue;
     }
 
-    public function setRue(string $rue): static
+    public function setRue(?string $rue): static
     {
         $this->rue = $rue;
 
@@ -62,7 +63,7 @@ class Lieu
         return $this->ville;
     }
 
-    public function setVille(string $ville): static
+    public function setVille(?string $ville): static
     {
         $this->ville = $ville;
 
@@ -87,7 +88,7 @@ class Lieu
         return $this->pays;
     }
 
-    public function setPays(string $pays): static
+    public function setPays(?string $pays): static
     {
         $this->pays = $pays;
 
