@@ -1,0 +1,66 @@
+name: CI/CD
+
+on:
+  push:
+    branches: ["main", "master", "develop"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ci:
+    name: CI (PHPStan + PHPUnit)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          tools: composer:v2
+          extensions: mbstring, intl, pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Composer cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache/files
+            vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Prepare env for CI
+        run: |
+          cp .env.example .env
+          sed -i 's/^APP_ENV=.*/APP_ENV=test/' .env
+          sed -i 's/^APP_DEBUG=.*/APP_DEBUG=0/' .env
+          sed -i 's/^APP_SECRET=.*/APP_SECRET=ci_secret_please_change/' .env
+          echo 'DATABASE_URL="sqlite:///%kernel.project_dir%/var/ci.db"' >> .env
+
+      - name: Install dependencies (no scripts)
+        run: composer install --no-interaction --prefer-dist --no-progress --no-scripts
+
+      - name: Warmup cache (test env)
+        run: php bin/console cache:warmup --env=test
+
+      - name: PHPStan
+        run: vendor/bin/phpstan analyse
+
+      - name: PHPUnit
+        run: vendor/bin/phpunit
+
+  # CD = optionnel. Je te mets un squelette "manuel" (workflow_dispatch)
+  # Il ne fait rien tant que tu n'as pas un serveur + secrets.
+  deploy:
+    name: CD (manual deploy)
+    needs: ci
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Placeholder
+        run: |
+          echo "CD non configuré. Ajoute un serveur + secrets (SSH_HOST, SSH_USER, SSH_KEY) et une commande de déploiement."
