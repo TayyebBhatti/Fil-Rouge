@@ -56,3 +56,7 @@ docker-compose.override.yml
 
 ### Misc ###
 coverage/
+
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###
