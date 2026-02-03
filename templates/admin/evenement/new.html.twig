@@ -97,7 +97,6 @@
               {{ form_row(form.lieu.ville,      { label: 'Ville' }) }}
               {{ form_row(form.lieu.pays,       { label: 'Pays' }) }}
             </div>
-            <p class="muted" style="margin-top:6px">Suggestion automatique si tu as activé les <code>datalist</code> dans ton formulaire.</p>
 
             <datalist id="dl-rue">
               {% for v in rues %}<option value="{{ v }}">{% endfor %}

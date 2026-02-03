@@ -11,14 +11,16 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class InscriptionController extends AbstractController
 {
     public function __construct(
-        private EntityManagerInterface $em,
-        private UserPasswordHasherInterface $passwordHasher,
-        private UtilisateurRepository $utilisateurRepository
-    ) {}
+    private EntityManagerInterface $em,
+    private UserPasswordHasherInterface $passwordHasher,
+    private UtilisateurRepository $utilisateurRepository,
+    private ValidatorInterface $validator
+) {}
 
     #[Route('/inscription', name: 'default_inscription', methods: ['GET', 'POST'])]
     public function inscription(Request $request): Response
@@ -51,8 +53,19 @@ class InscriptionController extends AbstractController
         $user->setNom($nom ?: null);
         $user->setRoles(['ROLE_USER']);
 
-        $hashed = $this->passwordHasher->hashPassword($user, $plain);
+        $user->setPlainPassword($plain);
+
+        $errors = $this->validator->validate($user);
+        if (count($errors) > 0) {
+            foreach ($errors as $error) {
+            $this->addFlash('error', $error->getMessage());
+        }
+        return $this->redirectToRoute('default_inscription');  
+        }
+
+        $hashed = $this->passwordHasher->hashPassword($user, (string) $user->getPlainPassword());
         $user->setPassword($hashed);
+        $user->eraseCredentials();
 
         $this->em->persist($user);
         $this->em->flush();

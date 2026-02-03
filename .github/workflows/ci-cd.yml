@@ -53,8 +53,6 @@ jobs:
       - name: PHPUnit
         run: vendor/bin/phpunit
 
-  # CD = optionnel. Je te mets un squelette "manuel" (workflow_dispatch)
-  # Il ne fait rien tant que tu n'as pas un serveur + secrets.
   deploy:
     name: CD (manual deploy)
     needs: ci

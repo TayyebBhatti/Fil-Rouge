@@ -41,6 +41,17 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'mot_de_passe', type: 'string', length: 255)]
     private string $password = '';
 
+    #[Assert\NotBlank(message: "Le mot de passe est obligatoire.")]
+    #[Assert\Length(
+        min: 8,
+        minMessage: "Le mot de passe doit contenir au minimum {{ limit }} caractères."
+    )]
+    #[Assert\Regex(
+        pattern: "/^(?=.*[^a-zA-Z0-9]).+$/",
+        message: "Le mot de passe doit contenir au moins un caractère spécial."
+    )]
+    private ?string $plainPassword = null;
+    
     /** @var Collection<int, Inscription> */
     #[ORM\OneToMany(targetEntity: Inscription::class, mappedBy: 'utilisateur', orphanRemoval: false)]
     private Collection $inscriptions;
@@ -124,6 +135,17 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function setPlainPassword(?string $plainPassword): self
+    {
+        $this->plainPassword = $plainPassword;
+        return $this;
+    }
+
 
     public function getImage(): ?string
     {
@@ -136,7 +158,10 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function eraseCredentials(): void {}
+    public function eraseCredentials(): void
+    {
+        $this->plainPassword = null;
+    }
 
 
 

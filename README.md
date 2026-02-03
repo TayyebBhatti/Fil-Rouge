@@ -15,3 +15,5 @@ cd Fil-Rouge-main
 
 cp .env.example .env
 composer install
+
+symfony server:start

@@ -3,11 +3,6 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    environment:
-      APP_ENV: dev
-      APP_DEBUG: 1
-      APP_SECRET: change_me
-      DATABASE_URL: "mysql://app:app@db:3306/filrouge?serverVersion=8.0.36&charset=utf8mb4"
     volumes:
       - ./:/var/www/html
     depends_on:
@@ -29,7 +24,7 @@ services:
       MYSQL_DATABASE: filrouge
       MYSQL_USER: app
       MYSQL_PASSWORD: app
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: app
     ports:
       - "3307:3306"
     volumes:
