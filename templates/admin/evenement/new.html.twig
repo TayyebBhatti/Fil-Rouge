@@ -18,6 +18,9 @@
   .card-body{padding:20px}
   .grid{display:grid;gap:14px}
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .stack{display:grid;gap:10px}
+  .hint{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
+  .hint::before,.hint::after{content:"";flex:1;height:1px;background:var(--border)}
   @media (max-width:720px){ .grid-2{grid-template-columns:1fr} }
 
   /* Form */
@@ -86,7 +89,12 @@
 
           <div class="grid-2">
             {{ form_row(form.capaciteMax, { label: 'Capacité max.' }) }}
-            {{ form_row(form.categorie,   { label: 'Catégorie' }) }}
+
+            <div class="stack">
+            {{ form_row(form.categorie, { label: 'Catégorie existante' }) }}
+            <div class="hint">ou</div>
+            {{ form_row(form.nouvelleCategorie, { label: 'Créer une catégorie' }) }}
+            </div>
           </div>
 
           <fieldset>
@@ -120,6 +128,7 @@
           </div>
         </div>
       {{ form_end(form) }}
+      {{ form_end(form, { render_rest: false }) }}
     </div>
   </div>
 

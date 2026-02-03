@@ -9,11 +9,13 @@ use App\Entity\Categorie;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
 
 final class EvenementType extends AbstractType
 {
@@ -35,10 +37,28 @@ final class EvenementType extends AbstractType
                 'label' => 'Lieu',
                 'required' => true,
             ])
-            ->add('image', TextType::class, [
-                'label' => 'Chemin image (ex: img/1.jpg)',
+            ->add('image', FileType::class, [
+                'label' => 'Image (optionnel)',
+                'mapped' => false,
                 'required' => false,
-                'attr' => ['placeholder' => 'img/1.jpg'],
+                'constraints' => [
+                    new File([
+                        'maxSize' => '5M',
+                        'mimeTypes' => ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+                        'mimeTypesMessage' => 'Formats acceptés: JPG, PNG, WEBP, GIF',
+                    ]),
+                ],
+                'attr' => [
+                    'accept' => 'image/*',
+                ],
+            ])
+            ->add('nouvelleCategorie', TextType::class, [
+                'label' => 'Nouvelle catégorie (optionnel)',
+                'mapped' => false,
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'Ex: Concert, Sport, LAN…',
+                ],
             ]);
     }
 

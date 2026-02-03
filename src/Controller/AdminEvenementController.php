@@ -18,6 +18,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\String\Slugger\SluggerInterface;
+use App\Entity\Categorie;
+use App\Repository\CategorieRepository;
 
 #[IsGranted('ROLE_ADMIN')]
 #[Route('/admin/evenement')]
@@ -32,8 +36,14 @@ final class AdminEvenementController extends AbstractController
     }
 
     #[Route('/new', name: 'admin_evenement_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em, LieuRepository $lieux, LieuService $lieuService): Response
-    {
+    public function new(
+        Request $request,
+        EntityManagerInterface $em,
+        LieuRepository $lieux,
+        LieuService $lieuService,
+        SluggerInterface $slugger,
+        CategorieRepository $categorieRepository
+    ): Response {
         $evenement = new Evenement();
 
         /** @var Utilisateur|null $user */
@@ -47,11 +57,41 @@ final class AdminEvenementController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
+                $nouvelleCategorie = trim((string) $form->get('nouvelleCategorie')->getData());
+
+                if ($nouvelleCategorie !== '') {
+                    $existing = $categorieRepository->findOneBy(['nom' => $nouvelleCategorie]);
+
+                    if ($existing) {
+                        $evenement->setCategorie($existing);
+                    } else {
+                        $categorie = new Categorie();
+                        $categorie->setNom($nouvelleCategorie);
+
+                        $em->persist($categorie);
+                        $evenement->setCategorie($categorie);
+                    }
+                }
                 $lieu = $evenement->getLieu();
                 if ($lieu instanceof Lieu) {
                     $evenement->setLieu($lieuService->normalizeAndDeduplicate($lieu));
                 }
+                /** @var UploadedFile|null $imageFile */
+                $imageFile = $form->get('image')->getData();
 
+                if ($imageFile instanceof UploadedFile) {
+                    $originalName = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                    $safeName = $slugger->slug($originalName)->lower();
+                    $newFilename = $safeName . '-' . uniqid('', true) . '.' . $imageFile->guessExtension();
+
+                    $imageFile->move(
+                        $this->getParameter('evenement_images_dir'),
+                        $newFilename
+                    );
+
+                    // chemin public (utilisé par asset() dans Twig)
+                    $evenement->setImage('uploads/evenements/' . $newFilename);
+                }
                 $em->persist($evenement);
                 $em->flush();
             } catch (DomainException $e) {
@@ -84,8 +124,14 @@ final class AdminEvenementController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'admin_evenement_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Evenement $evenement, EntityManagerInterface $em, LieuRepository $lieux, LieuService $lieuService): Response
-    {
+    public function edit(
+        Request $request,
+        Evenement $evenement,
+        EntityManagerInterface $em,
+        LieuRepository $lieux,
+        LieuService $lieuService,
+        SluggerInterface $slugger
+    ): Response {
         $form = $this->createForm(EvenementType::class, $evenement);
         $form->handleRequest($request);
 
@@ -94,6 +140,21 @@ final class AdminEvenementController extends AbstractController
                 $lieu = $evenement->getLieu();
                 if ($lieu instanceof Lieu) {
                     $evenement->setLieu($lieuService->normalizeAndDeduplicate($lieu));
+                }
+                /** @var UploadedFile|null $imageFile */
+                $imageFile = $form->get('image')->getData();
+
+                if ($imageFile instanceof UploadedFile) {
+                    $originalName = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                    $safeName = $slugger->slug($originalName)->lower();
+                    $newFilename = $safeName . '-' . uniqid('', true) . '.' . $imageFile->guessExtension();
+
+                    $imageFile->move(
+                        $this->getParameter('evenement_images_dir'),
+                        $newFilename
+                    );
+
+                    $evenement->setImage('uploads/evenements/' . $newFilename);
                 }
                 $em->flush();
             } catch (DomainException $e) {
@@ -153,7 +214,7 @@ final class AdminEvenementController extends AbstractController
         };
 
         $rues   = $fetch('rue');
-        $codes  = $fetch('codePostal'); 
+        $codes  = $fetch('codePostal');
         $villes = $fetch('ville');
         $pays   = $fetch('pays');
 
